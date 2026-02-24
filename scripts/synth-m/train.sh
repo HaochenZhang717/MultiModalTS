@@ -7,10 +7,10 @@ python run.py \
     --train_config_path configs/synth-m/train.yaml \
     --evaluate_config_path configs/synth-m/evaluate.yaml \
     --data_folder /playpen/haochenz/synthetic_m \
-    --clip_folder /playpen/haochenz/long_clip \
+    --clip_folder ./save/synth-m_cttp \
     --multipatch_num 3 \
     --L_patch_len 3 \
     --base_patch 4 \
     --epochs 700 \
     --batch_size 512 \
-    --clip_cache_path /playpen/haochenz/long_clip
+    --clip_cache_path ./cache/synth-m

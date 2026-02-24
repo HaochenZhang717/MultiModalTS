@@ -71,9 +71,9 @@ class Trainer:
         for epoch_no in range(self.n_epochs):
             self._train_epoch(epoch_no)
             if self.valid_loader is not None and (epoch_no + 1) % self.valid_epoch_interval == 0:
-                breakpoint()
                 self.valid(epoch_no)
-                self.evaluate(epoch_no)
+                # breakpoint()
+                # self.evaluate(epoch_no)
     
     def evaluate(self, epoch_no):
         self.model.eval()

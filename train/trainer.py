@@ -3,7 +3,7 @@ import time
 import numpy as np
 import torch
 from torch.optim import Adam
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 from data import GenerationDataset
 from evaluation.base_evaluator import BaseEvaluator
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ class Trainer:
         self._init_data(dataset)
         self._init_eval(eval_configs)
         self._best_valid_loss = 1e10
-        self.tf_writer = SummaryWriter(log_dir=self.output_folder)
+        # self.tf_writer = SummaryWriter(log_dir=self.output_folder)
 
     def _init_eval(self, eval_configs):
         dataset = GenerationDataset(eval_configs["data"])
@@ -79,8 +79,8 @@ class Trainer:
         self.evaluator.model = self.model
         self.evaluator.n_samples = 10
         res_dict = self.evaluator.evaluate(mode="cond_gen", sampler="ddim", save_pred=False)
-        for k in res_dict["tensorboard"].keys():
-            self.tf_writer.add_scalar(fr"Cond_gen/{k}", res_dict["tensorboard"][k], epoch_no)
+        # for k in res_dict["tensorboard"].keys():
+        #     self.tf_writer.add_scalar(fr"Cond_gen/{k}", res_dict["tensorboard"][k], epoch_no)
         
     def _train_epoch(self, epoch_no):
             start_time = time.time()
@@ -96,15 +96,15 @@ class Trainer:
                 self.opt.step()
 
                 avg_loss += loss_dict["all"].item()
-                for k in loss_dict.keys():
-                    self.tf_writer.add_scalar(fr"Train/{k}", loss_dict[k].item(), self._global_batch_no)
+                # for k in loss_dict.keys():
+                #     self.tf_writer.add_scalar(fr"Train/{k}", loss_dict[k].item(), self._global_batch_no)
 
                 if batch_no >= self.itr_per_epoch:
                     break
             self.lr_scheduler.step()
             avg_loss /= len(self.train_loader)
-            self.tf_writer.add_scalar("Train/epoch_loss", avg_loss, epoch_no)
-            self.tf_writer.add_scalar("Train/lr", self.opt.param_groups[0]['lr'], epoch_no)
+            # self.tf_writer.add_scalar("Train/epoch_loss", avg_loss, epoch_no)
+            # self.tf_writer.add_scalar("Train/lr", self.opt.param_groups[0]['lr'], epoch_no)
             end_time = time.time()
             
             if (epoch_no+1)%self.display_epoch_interval==0:
@@ -124,7 +124,7 @@ class Trainer:
                 avg_loss_valid += loss_dict["all"].item()
 
         avg_loss_valid = avg_loss_valid/len(self.valid_loader)
-        self.tf_writer.add_scalar("Valid/epoch_loss", avg_loss_valid, epoch_no)
+        # self.tf_writer.add_scalar("Valid/epoch_loss", avg_loss_valid, epoch_no)
 
         if self._best_valid_loss > avg_loss_valid:
             self._best_valid_loss = avg_loss_valid

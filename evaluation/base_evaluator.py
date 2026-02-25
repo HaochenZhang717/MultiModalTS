@@ -177,7 +177,7 @@ class BaseEvaluator:
                 if (batch_no+1)%self.display_epoch_interval == 0:
                     print("Batch", batch_no, 
                         "Batch Time {:.2f}s".format(end_time-start_time))
-        cttp /= sample_num
+        # cttp /= sample_num
         print("Done!")
         res_dict = {
             "tensorboard":{},

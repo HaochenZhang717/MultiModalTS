@@ -62,7 +62,7 @@ def evaluate(training_stage, eval_configs, model_diff_configs, model_cond_config
     print("\n***** Evaluate Configs *****")
     path = os.path.join(output_folder, "eval_configs.yaml")
     save_configs(eval_configs, path=path)
-
+    breakpoint()
     evaluator = BaseEvaluator(eval_configs["eval"], dataset, model)
 
     df = _evaluate_cond_gen(evaluator)

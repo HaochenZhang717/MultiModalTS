@@ -72,15 +72,21 @@ def evaluate(training_stage, eval_configs, model_diff_configs, model_cond_config
 
 def _evaluate_cond_gen(evaluator, sampler="ddim", n_sample=10):
     evaluator.n_samples = n_sample
-    res_dict = evaluator.evaluate(mode="cond_gen", sampler=sampler, save_pred=False)
+    res_dict, result_ts_dict = evaluator.evaluate(mode="cond_gen", sampler=sampler, save_pred=False)
+    for k, v in result_ts_dict.items():
+        if isinstance(v, torch.tensor):
+            print(k)
+            print(v.shape)
+            print("-" * 50)
+    breakpoint()
 
     info = {
-        "mode": "cond_gen", 
+        "mode": "cond_gen",
         "sampler": sampler,
         "n_samples": evaluator.n_samples,
         "steps": -1,
     }
-    info.update(res_dict["df"])    
+    info.update(res_dict["df"])
     df = pd.DataFrame([info])
     df["steps"].astype(int)
     return df

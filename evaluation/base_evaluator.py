@@ -133,6 +133,12 @@ class BaseEvaluator:
         cttp = 0
         sample_num = 0
 
+        result_ts_dict = {
+            "caption": [],
+            "real_ts": [],
+            "sampled_ts": []
+        }
+
         with torch.no_grad():
             for batch_no, batch in enumerate(self.test_loader):
                 start_time = time.time()
@@ -148,6 +154,7 @@ class BaseEvaluator:
                 # cap_emb = self.clip.get_text_coemb(cap_tokens, None)
 
 
+
                 if "clip_config_path" in self.configs.keys():
                     ts = batch["ts"].to(self.model.device).float()
                     ts_len = batch["ts_len"].to(self.model.device).int()
@@ -160,6 +167,11 @@ class BaseEvaluator:
                     all_joint_emb.append(torch.cat([ts_gen_emb,cap_emb], dim=-1))
                     cttp += torch.mm(ts_gen_emb, cap_emb.permute(1,0)).trace().item()
                     sample_num += ts_gen_emb.shape[0]
+
+                # 🔵 新增：保存数据（移动到CPU避免显存爆炸）
+                result_ts_dict["caption"].extend(batch["cap"])
+                result_ts_dict["real_ts"].append(batch["ts"].cpu())
+                result_ts_dict["sampled_ts"].append(multi_preds.cpu())
 
                 end_time = time.time()
                 if (batch_no+1)%self.display_epoch_interval == 0:
@@ -197,9 +209,9 @@ class BaseEvaluator:
             print("JFTSD: ", jftsd)
             print("CTTP ", cttp)
 
-        fid = calculate_frechet_distance(self.ts_mean, self.ts_cov, tsgen_mean, tsgen_var)
-        print("FID: ", fid)
-        jftsd = calculate_frechet_distance(self.joint_mean, self.joint_cov, joint_mean, joint_var)
-        print("JFTSD: ", jftsd)
-        breakpoint()
-        return res_dict
+
+        # 🔵 把 list 拼接成 tensor
+        result_ts_dict["real_ts"] = torch.cat(result_ts_dict["real_ts"], dim=0)
+        result_ts_dict["sampled_ts"] = torch.cat(result_ts_dict["sampled_ts"], dim=1)
+
+        return res_dict, result_ts_dict

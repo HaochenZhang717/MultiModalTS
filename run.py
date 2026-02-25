@@ -27,7 +27,6 @@ def train(training_stage, train_configs, model_diff_configs, model_cond_configs,
     if training_stage == "pretrain":
         model = UnConditionalGenerator(model_diff_configs)
     elif training_stage == "finetune":
-        breakpoint()
         if "attrs" in model_cond_configs.keys():
             model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
         model = ConditionalGenerator(model_diff_configs, model_cond_configs)

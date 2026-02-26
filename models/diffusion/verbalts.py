@@ -269,13 +269,14 @@ class VerbalTS(nn.Module):
         if attr_emb_raw is None:
             attr_emb = torch.zeros_like(x_in)
         else:
-            if "scale" in self.config["text_projector"]:
-                assert len(scale_length) == attr_emb_raw.shape[2]
-                mscale_attr_list = []
-                for i in range(len(scale_length)):
-                    tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
-                    mscale_attr_list.append(tmp_scale_attr)
-                attr_emb = torch.cat(mscale_attr_list, dim=2)
+            if "text_projector" in self.config:
+                if "scale" in self.config["text_projector"]:
+                    assert len(scale_length) == attr_emb_raw.shape[2]
+                    mscale_attr_list = []
+                    for i in range(len(scale_length)):
+                        tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
+                        mscale_attr_list.append(tmp_scale_attr)
+                    attr_emb = torch.cat(mscale_attr_list, dim=2)
             else:
                 print("attr_emb_raw.shape", attr_emb_raw.shape)
                 breakpoint()

@@ -37,9 +37,6 @@ class ConditionalGenerator(nn.Module):
             elif cond_configs["cond_modal"] == "simple_text":
                 cond_configs["text"]["device"] = self.device
                 self.attr_en = TextEncoder(cond_configs["text"]).to(self.device)
-            elif cond_configs["cond_modal"] == "multimodal":
-                cond_configs["multimodal"]["device"] = self.device
-                self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
             else:
                 raise NotImplementedError
 
@@ -56,6 +53,13 @@ class ConditionalGenerator(nn.Module):
 
             self.cond_projector = self.cond_projector.to(self.device)
 
+        elif cond_configs["cond_modal"] == "multimodal":
+            cond_configs["multimodal"]["device"] = self.device
+            self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
+
+
+        else:
+            raise NotImplementedError
     def _init_diff(self, configs):
         configs["device"] = self.device
         if "text" in self.cond_configs["cond_modal"]:

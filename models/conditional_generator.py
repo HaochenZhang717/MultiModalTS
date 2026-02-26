@@ -87,7 +87,7 @@ class ConditionalGenerator(nn.Module):
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
             if "multimodal" in self.cond_configs["cond_modal"]:
-                attr_emb = self.cond_projector(attr_emb_raw)
+                attr_emb = attr_emb_raw # for now we are not using projector.
             print(f"attr_emb.shape = {attr_emb.shape}")
             print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
             breakpoint()

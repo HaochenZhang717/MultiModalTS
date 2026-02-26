@@ -122,7 +122,9 @@ class ConditionalGenerator(nn.Module):
         elif self.cond_configs["cond_modal"] == "attr":
             attrs = batch["attrs"].to(self.device).long()
         elif "multimodal" in self.cond_configs["cond_modal"]:
-            attrs = batch["cap"]
+            attrs = []
+            for datum in batch["cap"]:
+                attrs.append({"text": datum})
         else:
             raise NotImplementedError
         ts = ts.permute(0, 2, 1)

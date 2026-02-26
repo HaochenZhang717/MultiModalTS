@@ -277,11 +277,16 @@ class VerbalTS(nn.Module):
                         tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
                         mscale_attr_list.append(tmp_scale_attr)
                     attr_emb = torch.cat(mscale_attr_list, dim=2)
+                    attr_emb = attr_emb.permute(0, 3, 1, 2)
+                else:
+                    raise ValueError
             else:
-                print("attr_emb_raw.shape", attr_emb_raw.shape)
-                breakpoint()
-                attr_emb = attr_emb_raw.expand([-1, -1, x_in.shape[-1], -1])
-            attr_emb = attr_emb.permute(0,3,1,2)
+                print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
+                B, _, Nk, Nl = x_in.shape
+                print(f"Nk: {Nk}, Nl: {Nl}")
+                attr_emb = attr_emb_raw[:, :, None, None].expand([1, 1, Nk, Nl])
+
+
         print("attr_emb.shape", attr_emb.shape)
         # attr_emb.shape==torch.Size([512, 64, 1, 47])
         breakpoint()

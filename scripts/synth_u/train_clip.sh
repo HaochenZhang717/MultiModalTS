@@ -1,7 +1,7 @@
 export HF_HOME=/playpen/haochenz/hf_cache
 
 CUDA_VISIBLE_DEVICES=6 python run.py \
-    --cond_modal multimodal \
+    --cond_modal text \
     --training_stage finetune \
     --save_folder ./save/synth_u/debug_multimodal \
     --model_diff_config_path configs/synth_u/diff/model_text2ts_dep.yaml \

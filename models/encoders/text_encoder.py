@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 from transformers import GPT2Config, GPT2Model, GPT2Tokenizer, BertConfig, BertModel
 from transformers import AutoTokenizer, CLIPTextModelWithProjection, CLIPTextConfig
-from qwen3_vl_embedding import Qwen3VLEmbedder
+from models.encoders.qwen3_vl_embedding import Qwen3VLEmbedder
 
 
 def get_torch_trans(heads=8, layers=1, channels=64):

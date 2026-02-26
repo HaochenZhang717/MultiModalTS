@@ -88,9 +88,9 @@ class ConditionalGenerator(nn.Module):
 
             if "multimodal" in self.cond_configs["cond_modal"]:
                 attr_emb = attr_emb_raw # for now we are not using projector.
-            print(f"attr_emb.shape = {attr_emb.shape}")
-            print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
-            breakpoint()
+            # print(f"attr_emb.shape = {attr_emb.shape}")
+            # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
+            # breakpoint()
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
             return loss
         

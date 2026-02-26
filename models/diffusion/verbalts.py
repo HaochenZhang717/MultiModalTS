@@ -283,6 +283,7 @@ class VerbalTS(nn.Module):
                 attr_emb = attr_emb_raw.expand([-1, -1, x_in.shape[-1], -1])
             attr_emb = attr_emb.permute(0,3,1,2)
         print("attr_emb.shape", attr_emb.shape)
+        # attr_emb.shape==torch.Size([512, 64, 1, 47])
         breakpoint()
         B, _, Nk, Nl = x_in.shape
         _x_in = x_in

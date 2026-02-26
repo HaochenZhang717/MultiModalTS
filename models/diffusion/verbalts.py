@@ -282,7 +282,7 @@ class VerbalTS(nn.Module):
                 # breakpoint()
                 attr_emb = attr_emb_raw.expand([-1, -1, x_in.shape[-1], -1])
             attr_emb = attr_emb.permute(0,3,1,2)
-
+        breakpoint()
         B, _, Nk, Nl = x_in.shape
         _x_in = x_in
         skip = []

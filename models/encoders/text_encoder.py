@@ -92,7 +92,7 @@ class MultiModalEncoder(nn.Module):
         self.vl_embeder = Qwen3VLEmbedder(model_name_or_path=configs["model_id"])
 
 
-        for i, (name, param) in enumerate(self.vl_embeder.named_parameters()):
+        for i, (name, param) in enumerate(self.vl_embeder.model.named_parameters()):
             param.requires_grad = False
 
         self.vl_enc = nn.Sequential(

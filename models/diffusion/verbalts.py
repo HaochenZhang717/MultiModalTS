@@ -281,15 +281,15 @@ class VerbalTS(nn.Module):
                 else:
                     raise ValueError
             else:
-                print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
+                # print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
                 B, _, Nk, Nl = x_in.shape
-                print(f"Nk: {Nk}, Nl: {Nl}")
-                attr_emb = attr_emb_raw[:, :, None, None].expand([1, 1, Nk, Nl])
+                # print(f"Nk: {Nk}, Nl: {Nl}")
+                attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
 
 
-        print("attr_emb.shape", attr_emb.shape)
+        # print("attr_emb.shape", attr_emb.shape)
         # attr_emb.shape==torch.Size([512, 64, 1, 47])
-        breakpoint()
+        # breakpoint()
         B, _, Nk, Nl = x_in.shape
         _x_in = x_in
         skip = []

@@ -1,3 +1,5 @@
+export HF_HOME=/playpen/haochenz/hf_cache
+
 CUDA_VISIBLE_DEVICES=5 python run.py \
     --cond_modal multimodal \
     --training_stage finetune \

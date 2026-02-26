@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from models.encoders.attr_encoder import AttributeEncoder
-from models.encoders.text_encoder import TextEncoder, CLIPTextEncoder
+from models.encoders.text_encoder import TextEncoder, CLIPTextEncoder, MultiModalEncoder
 from models.encoders.cond_projector import TextProjectorMVarMScaleMStep, AttrProjectorAvg
 from models.unconditional_generator import UnConditionalGenerator
 from models.cttp.cttp_model import CTTP
@@ -37,6 +37,13 @@ class ConditionalGenerator(nn.Module):
             elif cond_configs["cond_modal"] == "simple_text":
                 cond_configs["text"]["device"] = self.device
                 self.attr_en = TextEncoder(cond_configs["text"]).to(self.device)
+            elif cond_configs["cond_modal"] == "multimodal":
+                cond_configs["multimodal"]["device"] = self.device
+                self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
+            else:
+                raise NotImplementedError
+
+
             if cond_configs["text"]["text_projector"] == "var_scale_diffstep_multi":
                 self.cond_projector = TextProjectorMVarMScaleMStep(n_var=diff_configs["diffusion"]["n_var"],
                                                          n_scale=diff_configs["diffusion"]["multipatch_num"],
@@ -44,6 +51,9 @@ class ConditionalGenerator(nn.Module):
                                                          n_stages=cond_configs["text"]["num_stages"],
                                                          dim_in=cond_configs["text"]["text_emb"], 
                                                          dim_out=diff_configs["diffusion"]["channels"])
+
+
+
             self.cond_projector = self.cond_projector.to(self.device)
 
     def _init_diff(self, configs):
@@ -72,7 +82,11 @@ class ConditionalGenerator(nn.Module):
             if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
-            # breakpoint()
+            if "multimodal" in self.cond_configs["cond_modal"]:
+                attr_emb = self.cond_projector(attr_emb_raw)
+            print(f"attr_emb.shape = {attr_emb.shape}")
+            print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
+            breakpoint()
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
             return loss
         

@@ -3,6 +3,8 @@ import torch.nn as nn
 import numpy as np
 from transformers import GPT2Config, GPT2Model, GPT2Tokenizer, BertConfig, BertModel
 from transformers import AutoTokenizer, CLIPTextModelWithProjection, CLIPTextConfig
+from qwen3_vl_embedding import Qwen3VLEmbedder
+
 
 def get_torch_trans(heads=8, layers=1, channels=64):
     encoder_layer = nn.TransformerEncoderLayer(
@@ -79,3 +81,31 @@ class TextEncoder(nn.Module):
             text_emb += self.pe[:, :text_emb.shape[1], :].to(text_emb.device)
         text_emb = self.trans_layer(text_emb)
         return text_emb
+
+
+
+class MultiModalEncoder(nn.Module):
+    def __init__(self, configs):
+        super().__init__()
+        self.device = configs["device"]
+        self.vl_emb_dim = configs["vl_emb"]
+        self.vl_embeder = Qwen3VLEmbedder(model_name_or_path=configs["model_id"])
+
+
+        for i, (name, param) in enumerate(self.vl_embeder.named_parameters()):
+            param.requires_grad = False
+
+        self.vl_enc = nn.Sequential(
+            nn.Linear(configs["pretrain_model_dim"], configs["vl_emb_hidden_dim"]),
+            nn.LayerNorm(configs["vl_emb_hidden_dim"]),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(configs["vl_emb_hidden_dim"], configs["vl_emb"])
+        )
+
+    def forward(self, vl_inputs):
+        # todo: may need some way to chage the shape
+        # except vl_inputs as a list of dictionary
+        out = self.vl_embeder.process(vl_inputs)
+        out = self.vl_enc(out)
+        return out
+

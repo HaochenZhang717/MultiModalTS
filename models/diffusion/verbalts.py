@@ -277,6 +277,8 @@ class VerbalTS(nn.Module):
                     mscale_attr_list.append(tmp_scale_attr)
                 attr_emb = torch.cat(mscale_attr_list, dim=2)
             else:
+                print("attr_emb_raw.shape", attr_emb_raw.shape)
+                breakpoint()
                 attr_emb = attr_emb_raw.expand([-1, -1, x_in.shape[-1], -1])
             attr_emb = attr_emb.permute(0,3,1,2)
 

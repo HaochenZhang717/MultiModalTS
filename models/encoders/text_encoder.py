@@ -105,7 +105,6 @@ class MultiModalEncoder(nn.Module):
     def forward(self, vl_inputs):
         # todo: may need some way to chage the shape
         # except vl_inputs as a list of dictionary
-        breakpoint()
         out = self.vl_embeder.process(vl_inputs)
         out = self.vl_enc(out)
         return out

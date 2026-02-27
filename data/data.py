@@ -45,6 +45,8 @@ class CustomSplit(Dataset):
         else:
             raise NotImplementedError
 
+        self.caps_embed = None
+
         if self.text_type == "original_text":
             caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.pt")
             if os.path.exists(caps_embed_path):
@@ -53,8 +55,7 @@ class CustomSplit(Dataset):
                 caps_embed = torch.load(caps_embed_path, map_location="cpu")
                 self.caps_embed = caps_embed
                 print("using precomputed caps embedding.")
-            else:
-                self.caps_embed = None
+
 
         self.ts, self.attrs, self.caps = ts, attrs, caps
         self.n_samples = self.ts.shape[0]

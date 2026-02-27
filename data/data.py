@@ -4,6 +4,7 @@ import numpy as np
 import random
 from torch.utils.data import Dataset
 import time
+import torch
 
 class CustomDataset:
     def __init__(self, folder, **kwargs):
@@ -37,10 +38,11 @@ class CustomSplit(Dataset):
         attrs = np.load(os.path.join(self.folder, self.split+"_attrs_idx.npy"))  # [n_samples, n_attrs]
         caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True) # need to change if I want
 
-        caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.npy")
+        caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.pt")
         if os.path.exists(caps_embed_path):
             # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")
-            caps_embed = np.load(caps_embed_path, allow_pickle=True)
+            # caps_embed = np.load(caps_embed_path, allow_pickle=True)
+            caps_embed = torch.load(caps_embed_path, map_location="cpu")
             self.caps_embed = caps_embed
             print("using precomputed caps embedding.")
         else:

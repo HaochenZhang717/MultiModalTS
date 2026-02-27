@@ -164,6 +164,7 @@ class ConditionalGenerator(nn.Module):
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
         ts, tp, attrs, attr_embed_batch = self._unpack_data_cond_gen(batch)
+        breakpoint()
         if attr_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
         else:

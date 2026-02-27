@@ -253,9 +253,7 @@ def calculate_all_scores(results_path):
         )
         # print(f"Discriminative Score Metrics: {discriminative_score}")
 
-        predictive_score = predictive_score_metrics(
-            real, fake, device
-        )
+        predictive_score = predictive_score_metrics(real, fake, device)
         # print(f"Predictive Score Metrics: {predictive_score}")
         disc_score_list.append(discriminative_score)
         pred_score_list.append(predictive_score)

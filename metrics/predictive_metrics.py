@@ -36,6 +36,9 @@ def predictive_score_metrics(
     # ori_data = torch.tensor(ori_data, dtype=torch.float32).to(device)
     # generated_data = torch.tensor(generated_data, dtype=torch.float32).to(device)
 
+    ori_data = ori_data.to(device)
+    generated_data = generated_data.to(device)
+
     N, T, dim = generated_data.shape  # should be (N, 128, 1)
 
     model = GRUPredictor(input_dim=dim, hidden_dim=64).to(device)

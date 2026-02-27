@@ -171,11 +171,18 @@ class ConditionalGenerator(nn.Module):
         if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
             attr_emb = self.cond_projector(attr_emb_raw)
 
+        if "multimodal" in self.cond_configs["cond_modal"]:
+            attr_emb = self.cond_projector(attr_emb_raw)
+
 
         samples = []
         B = ts.shape[0]
         for i in range(n_samples):
             x = torch.randn_like(ts)
+
+            if "multimodal" in self.cond_configs["cond_modal"]:
+                attr_emb = self.cond_projector(attr_emb_raw)
+
             for t in range(self.generator.num_steps-1, -1, -1):
                 noise = torch.randn_like(x)
                 t = (torch.ones(B, device=self.device) * t).long()

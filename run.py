@@ -78,7 +78,7 @@ def _evaluate_cond_gen(evaluator, sampler="ddim", n_sample=10):
         #     print(k)
         #     print(v.shape)
         #     print("-" * 50)
-    # breakpoint()
+    breakpoint()
 
     info = {
         "mode": "cond_gen",

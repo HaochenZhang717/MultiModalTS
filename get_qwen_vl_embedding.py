@@ -2,7 +2,7 @@ from models.encoders.qwen3_vl_embedding import Qwen3VLEmbedder
 import numpy as np
 import torch
 from typing import List, Dict
-
+from tqdm import tqdm
 
 def hugging_face_demo():
     # Define a list of query texts
@@ -69,7 +69,7 @@ def run_train_synthetic_u():
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
     embeds = []
-    for cap in all_my_text_caps:
+    for cap in tqdm(all_my_text_caps):
         input_list = [{"text": str(cap[0])}]
         embed = model.process(input_list)
         embeds.append(embed)
@@ -86,7 +86,7 @@ def run_valid_synthetic_u():
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
     embeds = []
-    for cap in all_my_text_caps:
+    for cap in tqdm(all_my_text_caps):
         input_list = [{"text": str(cap[0])}]
         embed = model.process(input_list)
         embeds.append(embed)

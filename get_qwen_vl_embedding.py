@@ -165,9 +165,9 @@ def run_test_synthetic_u_my_text():
 
 
 def run_sample_synthetic_u_my_text():
-    # all_my_text_caps = np.load("./synthetic_u/train_text_my_caps.npy", allow_pickle=True)
     all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
-    # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
+    print("DiTDH-S-samples shape: ", all_my_text_caps.shape)
+    # all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples.npy", allow_pickle=True)
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
     embeds = []
@@ -177,6 +177,7 @@ def run_sample_synthetic_u_my_text():
         embeds.append(embed)
     embeds = torch.cat(embeds)
     torch.save(embeds, "/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples_embed.pt")
+    # torch.save(embeds, "/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples_embed.pt")
     print("Embeddings generated successfully!")
     print("Embedding size: ", embeds.shape)
 

@@ -36,6 +36,7 @@ class CustomSplit(Dataset):
         ts = np.load(os.path.join(self.folder, self.split+"_ts.npy"))     # [n_samples, n_steps]
         attrs = np.load(os.path.join(self.folder, self.split+"_attrs_idx.npy"))  # [n_samples, n_attrs]
         caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True)
+        breakpoint()
         self.ts, self.attrs, self.caps = ts, attrs, caps
         self.n_samples = self.ts.shape[0]
         self.n_steps = self.ts.shape[1]

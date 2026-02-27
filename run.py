@@ -133,6 +133,12 @@ parser.add_argument("--epochs", type=int, default=200)
 parser.add_argument("--guide_w", type=float, default=1.0)
 parser.add_argument("--only_evaluate", type=bool, default=False)
 
+
+# extra parameters
+parser.add_argument("--text_type", type=str, required=True, choices=["original_text", "my_generated_text"])
+
+
+
 args = parser.parse_args()
 
 save_folder = args.save_folder
@@ -141,6 +147,10 @@ print("All files will be saved to '{}'".format(save_folder))
 
 train_configs = yaml.safe_load(open(args.train_config_path))
 eval_configs = yaml.safe_load(open(args.evaluate_config_path))
+
+train_configs.update({"text_type": args.text_type})
+eval_configs.update({"text_type": args.text_type})
+
 model_diff_configs = yaml.safe_load(open(args.model_diff_config_path))
 if args.training_stage == "finetune":
     model_cond_configs = yaml.safe_load(open(args.model_cond_config_path))

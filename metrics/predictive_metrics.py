@@ -33,8 +33,8 @@ def predictive_score_metrics(
 ):
 
     # Convert to tensor
-    ori_data = torch.tensor(ori_data, dtype=torch.float32).to(device)
-    generated_data = torch.tensor(generated_data, dtype=torch.float32).to(device)
+    # ori_data = torch.tensor(ori_data, dtype=torch.float32).to(device)
+    # generated_data = torch.tensor(generated_data, dtype=torch.float32).to(device)
 
     N, T, dim = generated_data.shape  # should be (N, 128, 1)
 

@@ -2,9 +2,9 @@ export HF_HOME=/playpen/haochenz/hf_cache
 
 CUDA_VISIBLE_DEVICES=5 python run.py \
     --cond_modal text \
-    --text_type my_generated_text \
+    --text_type original_text_caps_only \
     --training_stage finetune \
-    --save_folder ../save/synth_u/use_clip_use_my_caps \
+    --save_folder ../save/synth_u/use_clip_original_text_caps_only \
     --model_diff_config_path configs/synth_u/diff/model_text2ts_dep.yaml \
     --model_cond_config_path configs/synth_u/cond/text_msmdiffmv.yaml \
     --train_config_path configs/synth_u/train.yaml \

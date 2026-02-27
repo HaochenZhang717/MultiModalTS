@@ -135,7 +135,9 @@ parser.add_argument("--only_evaluate", type=bool, default=False)
 
 
 # extra parameters
-parser.add_argument("--text_type", type=str, required=True, choices=["original_text", "my_generated_text"])
+parser.add_argument("--text_type", type=str, required=True,
+                    choices=["original_text_caps_only", "original_text_embeds", "my_generated_text"]
+                    )
 
 
 

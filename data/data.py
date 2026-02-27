@@ -38,7 +38,7 @@ class CustomSplit(Dataset):
         ts = np.load(os.path.join(self.folder, self.split+"_ts.npy"))     # [n_samples, n_steps]
         attrs = np.load(os.path.join(self.folder, self.split+"_attrs_idx.npy"))  # [n_samples, n_attrs]
 
-        if self.text_type == "original_text":
+        if "original_text" in self.text_type:
             caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True) # need to change if I want
         elif self.text_type == "my_generated_text":
             caps = np.load(os.path.join(self.folder, self.split+fr"_text_my_caps.npy"), allow_pickle=True) # need to change if I want
@@ -47,7 +47,7 @@ class CustomSplit(Dataset):
 
         self.caps_embed = None
 
-        if self.text_type == "original_text":
+        if self.text_type == "original_text_embeds":
             caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.pt")
             if os.path.exists(caps_embed_path):
                 # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")

@@ -284,6 +284,7 @@ class VerbalTS(nn.Module):
                 # print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
                 B, _, Nk, Nl = x_in.shape
                 # print(f"Nk: {Nk}, Nl: {Nl}")
+                breakpoint()
                 attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
 
 

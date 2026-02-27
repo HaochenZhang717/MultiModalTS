@@ -69,7 +69,7 @@ class CustomSplit(Dataset):
         }
 
         if self.caps_embed is not None:
-            item_dict.update({"cap_embed": self.caps_embed[idx].unsqueeze(0)})
+            item_dict.update({"cap_embed": self.caps_embed[idx]})
         return item_dict
 
     def __len__(self):

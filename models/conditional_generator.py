@@ -55,7 +55,15 @@ class ConditionalGenerator(nn.Module):
 
         elif cond_configs["cond_modal"] == "multimodal":
             cond_configs["multimodal"]["device"] = self.device
-            self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
+            # self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
+            self.cond_projector = nn.Sequential(
+                nn.Linear(cond_configs["multimodal"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.LayerNorm(cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Linear(cond_configs["multimodal"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"])
+            )
+            self.cond_projector = self.cond_projector.to(self.device)
+
 
 
         else:
@@ -92,7 +100,7 @@ class ConditionalGenerator(nn.Module):
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
             if "multimodal" in self.cond_configs["cond_modal"]:
-                attr_emb = attr_emb_raw  # for now we are not using projector.
+                attr_emb = self.cond_projector(attr_emb_raw)  # for now we are not using projector.
 
             # print(f"attr_emb.shape = {attr_emb.shape}")
             # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
@@ -136,7 +144,6 @@ class ConditionalGenerator(nn.Module):
         else:
             raise NotImplementedError
         ts = ts.permute(0, 2, 1)
-        breakpoint()
 
         attrs_embed = None
         if "cap_embed" in batch.keys():

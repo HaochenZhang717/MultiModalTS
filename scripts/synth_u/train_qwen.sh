@@ -1,6 +1,6 @@
 export HF_HOME=/playpen/haochenz/hf_cache
 
-CUDA_VISIBLE_DEVICES=6 python run.py \
+CUDA_VISIBLE_DEVICES=4 python run.py \
     --cond_modal multimodal \
     --training_stage finetune \
     --save_folder ./save/synth_u/debug_multimodal \

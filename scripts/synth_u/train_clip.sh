@@ -4,7 +4,7 @@ CUDA_VISIBLE_DEVICES=5 python run.py \
     --cond_modal text \
     --text_type my_generated_text \
     --training_stage finetune \
-    --save_folder ./save/synth_u/debug_multimodal \
+    --save_folder ../save/synth_u/use_clip_use_my_caps \
     --model_diff_config_path configs/synth_u/diff/model_text2ts_dep.yaml \
     --model_cond_config_path configs/synth_u/cond/text_msmdiffmv.yaml \
     --train_config_path configs/synth_u/train.yaml \

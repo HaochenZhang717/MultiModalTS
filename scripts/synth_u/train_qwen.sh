@@ -13,6 +13,6 @@ CUDA_VISIBLE_DEVICES=4 python run.py \
     --multipatch_num 3 \
     --L_patch_len 3 \
     --base_patch 4 \
-    --epochs 20 \
+    --epochs 700 \
     --batch_size 512 \
     --clip_cache_path ""

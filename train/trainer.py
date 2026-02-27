@@ -16,7 +16,7 @@ class Trainer:
         self._init_cfgs(configs)
         self._init_model(model)
         self._init_opt()
-        self._init_data(dataset)
+        self._init_data(dataset, configs["text_type"])
         self._init_eval(eval_configs)
         self._best_valid_loss = 1e10
         # self.tf_writer = SummaryWriter(log_dir=self.output_folder)
@@ -54,10 +54,10 @@ class Trainer:
         self.lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
             self.opt, milestones=[p1, p2], gamma=0.1)
 
-    def _init_data(self, dataset):
+    def _init_data(self, dataset, text_type):
         self.dataset = dataset
-        self.train_loader = dataset.get_loader(split="train", batch_size=self.batch_size, shuffle=True, include_self=True)
-        self.valid_loader = dataset.get_loader(split="valid", batch_size=self.batch_size, shuffle=False, include_self=True)
+        self.train_loader = dataset.get_loader(split="train", text_type=text_type, batch_size=self.batch_size, shuffle=True, include_self=True)
+        self.valid_loader = dataset.get_loader(split="valid", text_type=text_type, batch_size=self.batch_size, shuffle=False, include_self=True)
 
     def _reset_train(self):
         self._best_valid_loss = 1e10

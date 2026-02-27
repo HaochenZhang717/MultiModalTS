@@ -47,7 +47,7 @@ class BaseEvaluator:
     def __init__(self, configs, dataset, model):
         self._init_cfgs(configs)
         self._init_model(model)
-        self._init_data(dataset)
+        self._init_data(dataset, configs["text_type"])
         if "clip_config_path" in configs.keys():
             self._init_clip(configs)
 
@@ -71,7 +71,7 @@ class BaseEvaluator:
             self.joint_mean = np.load(jftsd_mean_cache_path)
             self.joint_cov = np.load(jftsd_cov_cache_path)
         else:
-            train_loader = self.dataset.get_loader(split="train", batch_size=self.batch_size, shuffle=False, include_self=False)
+            train_loader = self.dataset.get_loader(split="train", text_type=configs["text_type"], batch_size=self.batch_size, shuffle=False, include_self=False)
             all_ts_emb, all_joint_emb = [], []
             with torch.no_grad():
                 print("calc the ts mean and cov")
@@ -112,9 +112,9 @@ class BaseEvaluator:
             print("Loading pretrained model from {}".format(self.model_path))
             self.model.load_state_dict(torch.load(self.model_path))
 
-    def _init_data(self, dataset):
+    def _init_data(self, dataset, text_type):
         self.dataset = dataset
-        self.test_loader = dataset.get_loader(split="test", batch_size=self.batch_size, shuffle=False, include_self=False)
+        self.test_loader = dataset.get_loader(split="test", text_type=text_type, batch_size=self.batch_size, shuffle=False, include_self=False)
 
     """
     Evaluate.

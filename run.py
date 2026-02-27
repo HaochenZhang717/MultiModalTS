@@ -23,7 +23,7 @@ def train(training_stage, train_configs, model_diff_configs, model_cond_configs,
     train_configs["train"]["output_folder"] = output_folder
 
     dataset = GenerationDataset(train_configs["data"])
-    breakpoint()
+
     if training_stage == "pretrain":
         model = UnConditionalGenerator(model_diff_configs)
     elif training_stage == "finetune":

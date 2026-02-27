@@ -60,6 +60,7 @@ class ConditionalGenerator(nn.Module):
 
         else:
             raise NotImplementedError
+
     def _init_diff(self, configs):
         configs["device"] = self.device
         if "text" in self.cond_configs["cond_modal"]:
@@ -114,6 +115,7 @@ class ConditionalGenerator(nn.Module):
         return loss_dict
 
     def _unpack_data_cond_gen(self, batch):
+        breakpoint()
         ts = batch["ts"].to(self.device).float()
         tp = batch["tp"].to(self.device).float()
         if "text" in self.cond_configs["cond_modal"]:

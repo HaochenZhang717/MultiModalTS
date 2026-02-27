@@ -35,8 +35,17 @@ class CustomSplit(Dataset):
     def _load_data(self):
         ts = np.load(os.path.join(self.folder, self.split+"_ts.npy"))     # [n_samples, n_steps]
         attrs = np.load(os.path.join(self.folder, self.split+"_attrs_idx.npy"))  # [n_samples, n_attrs]
-        caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True)
-        breakpoint()
+        caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True) # need to change if I want
+
+        caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.npy")
+        if os.path.exists(caps_embed_path):
+            # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")
+            caps_embed = np.load(caps_embed_path, allow_pickle=True)
+            self.caps_embed = caps_embed
+            print("using precomputed caps embedding.")
+        else:
+            self.caps_embed = None
+
         self.ts, self.attrs, self.caps = ts, attrs, caps
         self.n_samples = self.ts.shape[0]
         self.n_steps = self.ts.shape[1]
@@ -48,11 +57,18 @@ class CustomSplit(Dataset):
         tmp_ts = self.ts[idx]
         if len(tmp_ts.shape) == 1:
             tmp_ts = tmp_ts[...,np.newaxis]
-        return {"ts": tmp_ts,
-                "ts_len": tmp_ts.shape[0],
-                "attrs": self.attrs[idx],
-                "cap": self.caps[idx][cap_id],
-                "tp": self.time_point}
+
+        item_dict = {
+            "ts": tmp_ts,
+            "ts_len": tmp_ts.shape[0],
+            "attrs": self.attrs[idx],
+            "cap": self.caps[idx][cap_id],
+            "tp": self.time_point
+        }
+
+        if self.caps_embed is not None:
+            item_dict.update({"cap_embed": self.caps_embed[idx].unsqueeze(0)})
+        return item_dict
 
     def __len__(self):
         return self.n_samples

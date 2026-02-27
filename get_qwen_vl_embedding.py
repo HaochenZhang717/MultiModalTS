@@ -1,4 +1,4 @@
-from qwen3_vl_embedding import Qwen3VLEmbedder
+from models.encoders.qwen3_vl_embedding import Qwen3VLEmbedder
 import numpy as np
 import torch
 from typing import List, Dict

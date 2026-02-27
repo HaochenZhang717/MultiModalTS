@@ -148,7 +148,7 @@ print("All files will be saved to '{}'".format(save_folder))
 train_configs = yaml.safe_load(open(args.train_config_path))
 eval_configs = yaml.safe_load(open(args.evaluate_config_path))
 
-train_configs.update({"text_type": args.text_type})
+train_configs["train"].update({"text_type": args.text_type})
 eval_configs.update({"text_type": args.text_type})
 
 model_diff_configs = yaml.safe_load(open(args.model_diff_config_path))

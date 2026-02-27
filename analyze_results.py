@@ -238,15 +238,47 @@ def analyze_unconditional_results():
 
 
 def calculate_all_scores(results_path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
-    print(results_dict.keys())
-    breakpoint()
-    print(results_dict.keys())
+    real = results_dict["real_ts"]
+
+    disc_score_list = []
+    pred_score_list = []
+    for i in range(10):
+        fake = results_dict["sampled_ts"][i]
+        discriminative_score = discriminative_score_metrics(
+            real, fake,
+            real.shape[-1],
+            device,
+        )
+        # print(f"Discriminative Score Metrics: {discriminative_score}")
+
+        predictive_score = predictive_score_metrics(
+            real, fake, device
+        )
+        # print(f"Predictive Score Metrics: {predictive_score}")
+        disc_score_list.append(discriminative_score)
+        pred_score_list.append(predictive_score)
+
+    disc_score_arr = np.array(disc_score_list)
+    pred_score_arr = np.array(pred_score_list)
+
+    disc_mean = disc_score_arr.mean()
+    disc_std = disc_score_arr.std(ddof=1)  # sample std
+
+    pred_mean = pred_score_arr.mean()
+    pred_std = pred_score_arr.std(ddof=1)
+    print(results_path)
+    print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
+    print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
+    print("---"*50)
 
 
 
 if __name__ == "__main__":
     calculate_all_scores("/playpen/haochenz/save/synth_u/use_clip_original_text_caps_only/0/samples.pth")
+    calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_embedding/0/samples.pth")
+    calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
     # analyze_unconditional_results()
     # for i in range(5):
     #     # visualize_sample(

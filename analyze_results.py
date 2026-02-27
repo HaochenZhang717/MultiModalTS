@@ -238,7 +238,7 @@ def analyze_unconditional_results():
 
 
 def calculate_all_scores(results_path):
-    results_dict = torch.load(results_path, map_location="cpu")
+    results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
     print(results_dict.keys())
     breakpoint()
     print(results_dict.keys())

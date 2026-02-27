@@ -78,8 +78,9 @@ def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
         #     print(k)
         #     print(v.shape)
         #     print("-" * 50)
-    breakpoint()
-
+    # breakpoint()
+    torch.save(result_ts_dict, os.path.join(output_folder, "samples.pth"))
+    print("Samples saved in {}".format(os.path.join(output_folder, "samples.pth")))
     info = {
         "mode": "cond_gen",
         "sampler": sampler,

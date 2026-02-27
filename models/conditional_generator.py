@@ -76,19 +76,24 @@ class ConditionalGenerator(nn.Module):
     Finetune.
     """
     def forward(self, batch, is_train):
-        x, tp, attrs = self._unpack_data_cond_gen(batch)
-        attr_emb_raw = self.attr_en(attrs)
-        if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
-            attr_emb = self.cond_projector(attr_emb_raw)
+        x, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)
+        if attrs_embed_batch is None:
+            attr_emb_raw = self.attr_en(attrs)
+            if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
+                attr_emb = self.cond_projector(attr_emb_raw)
+        else:
+            attr_emb_raw = attrs_embed_batch
 
         B = x.shape[0]
         if is_train:
             t = torch.randint(0, self.generator.num_steps, [B], device=self.device)
+
             if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
             if "multimodal" in self.cond_configs["cond_modal"]:
-                attr_emb = attr_emb_raw # for now we are not using projector.
+                attr_emb = attr_emb_raw  # for now we are not using projector.
+
             # print(f"attr_emb.shape = {attr_emb.shape}")
             # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
             # breakpoint()
@@ -127,16 +132,21 @@ class ConditionalGenerator(nn.Module):
         elif "multimodal" in self.cond_configs["cond_modal"]:
             attrs = []
             for datum in batch["cap"]:
-                attrs.append({"text": datum})
+                attrs.append({"text": str(datum[0])})
         else:
             raise NotImplementedError
         ts = ts.permute(0, 2, 1)
         breakpoint()
-        return ts, tp, attrs
+
+        attrs_embed = None
+        if "cap_embed" in batch.keys():
+            attrs_embed = batch["cap_embed"].to(self.device).float()
+        return ts, tp, attrs, attrs_embed
 
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":
-            return self.generate_constraint(batch, n_samples, sampler)
+            raise ValueError("Not Changed for precomputed attr_embed yet")
+            # return self.generate_constraint(batch, n_samples, sampler)
         else:
             return self.generate_text(batch, n_samples, sampler)
 
@@ -145,8 +155,11 @@ class ConditionalGenerator(nn.Module):
     """
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, attrs = self._unpack_data_cond_gen(batch)
-        attr_emb_raw = self.attr_en(attrs)
+        ts, tp, attrs, attr_embed_batch = self._unpack_data_cond_gen(batch)
+        if attr_embed_batch is None:
+            attr_emb_raw = self.attr_en(attrs)
+        else:
+            attr_emb_raw = attr_embed_batch
         if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
             attr_emb = self.cond_projector(attr_emb_raw)
 
@@ -173,7 +186,7 @@ class ConditionalGenerator(nn.Module):
         return torch.stack(samples)
     
     def generate_constraint(self, batch, n_samples, sampler="ddim"):
-        ts, tp, attrs = self._unpack_data_cond_gen(batch)
+        ts, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)#todo: need to change maybe
         samples = []
         B = ts.shape[0]
         for i in range(n_samples):

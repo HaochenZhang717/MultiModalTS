@@ -64,7 +64,7 @@ def use_qwen3vl_embedding_process(
 
 def run_train_synthetic_u():
     # all_my_text_caps = np.load("./synthetic_u/train_text_my_caps.npy", allow_pickle=True)
-    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/train_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/train_text_caps.npy", allow_pickle=True)
     # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
@@ -74,14 +74,14 @@ def run_train_synthetic_u():
         embed = model.process(input_list)
         embeds.append(embed)
     embeds = torch.cat(embeds)
-    torch.save(embeds, "/playpen/haochenz/synthetic_u/train_embeds_my_caps.pt")
+    torch.save(embeds, "/playpen/haochenz/synthetic_u/train_embeds_caps.pt")
     print("Embeddings generated successfully!")
     print("Embedding size: ", embeds.shape)
 
 
 def run_valid_synthetic_u():
     # all_my_text_caps = np.load("./synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
-    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/valid_text_caps.npy", allow_pickle=True)
     # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
@@ -91,7 +91,7 @@ def run_valid_synthetic_u():
         embed = model.process(input_list)
         embeds.append(embed)
     embeds = torch.cat(embeds)
-    torch.save(embeds, "/playpen/haochenz/synthetic_u/valid_embeds_my_caps.pt")
+    torch.save(embeds, "/playpen/haochenz/synthetic_u/valid_embeds_caps.pt")
     print("Embeddings generated successfully!")
     print("Embedding size: ", embeds.shape)
 

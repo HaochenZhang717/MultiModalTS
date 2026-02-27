@@ -40,7 +40,7 @@ class CustomSplit(Dataset):
 
         if "original_text" in self.text_type:
             caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True) # need to change if I want
-        elif self.text_type == "my_generated_text":
+        elif "my_generated_text" in self.text_type:
             caps = np.load(os.path.join(self.folder, self.split+fr"_text_my_caps.npy"), allow_pickle=True) # need to change if I want
         else:
             raise NotImplementedError
@@ -49,6 +49,14 @@ class CustomSplit(Dataset):
 
         if self.text_type == "original_text_embeds":
             caps_embed_path = os.path.join(self.folder, self.split+fr"_embeds_caps.pt")
+            if os.path.exists(caps_embed_path):
+                # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")
+                # caps_embed = np.load(caps_embed_path, allow_pickle=True)
+                caps_embed = torch.load(caps_embed_path, map_location="cpu")
+                self.caps_embed = caps_embed
+                print("using precomputed caps embedding.")
+        elif self.text_type == "my_generated_text_embeds":
+            caps_embed_path = os.path.join(self.folder, self.split + fr"_embeds_my_caps.pt")
             if os.path.exists(caps_embed_path):
                 # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")
                 # caps_embed = np.load(caps_embed_path, allow_pickle=True)

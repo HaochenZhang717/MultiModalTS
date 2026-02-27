@@ -115,7 +115,7 @@ class ConditionalGenerator(nn.Module):
         return loss_dict
 
     def _unpack_data_cond_gen(self, batch):
-        breakpoint()
+
         ts = batch["ts"].to(self.device).float()
         tp = batch["tp"].to(self.device).float()
         if "text" in self.cond_configs["cond_modal"]:
@@ -131,6 +131,7 @@ class ConditionalGenerator(nn.Module):
         else:
             raise NotImplementedError
         ts = ts.permute(0, 2, 1)
+        breakpoint()
         return ts, tp, attrs
 
     def generate(self, batch, n_samples, sampler="ddim"):

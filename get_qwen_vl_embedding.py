@@ -62,7 +62,7 @@ def use_qwen3vl_embedding_process(
     return embeddings
 
 
-def run_train_synthetic_u():
+def run_train_synthetic_u_orig_text():
     # all_my_text_caps = np.load("./synthetic_u/train_text_my_caps.npy", allow_pickle=True)
     all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/train_text_caps.npy", allow_pickle=True)
     # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
@@ -79,7 +79,7 @@ def run_train_synthetic_u():
     print("Embedding size: ", embeds.shape)
 
 
-def run_valid_synthetic_u():
+def run_valid_synthetic_u_orig_text():
     # all_my_text_caps = np.load("./synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
     all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/valid_text_caps.npy", allow_pickle=True)
     # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
@@ -96,7 +96,7 @@ def run_valid_synthetic_u():
     print("Embedding size: ", embeds.shape)
 
 
-def run_test_synthetic_u():
+def run_test_synthetic_u_orig_text():
     # all_my_text_caps = np.load("./synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
     all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/test_text_caps.npy", allow_pickle=True)
     # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
@@ -113,10 +113,64 @@ def run_test_synthetic_u():
     print("Embedding size: ", embeds.shape)
 
 
-if __name__ == '__main__':
-    # run_train_synthetic_u()
-    # run_valid_synthetic_u()
-    run_test_synthetic_u()
+def run_train_synthetic_u_my_text():
+    # all_my_text_caps = np.load("./synthetic_u/train_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/train_text_my_caps.npy", allow_pickle=True)
+    # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
+    model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
+    model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
+    embeds = []
+    for cap in tqdm(all_my_text_caps):
+        input_list = [{"text": str(cap[0])}]
+        embed = model.process(input_list)
+        embeds.append(embed)
+    embeds = torch.cat(embeds)
+    torch.save(embeds, "/playpen/haochenz/synthetic_u/train_embeds_my_caps.pt")
+    print("Embeddings generated successfully!")
+    print("Embedding size: ", embeds.shape)
 
+
+def run_valid_synthetic_u_my_text():
+    # all_my_text_caps = np.load("./synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
+    # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
+    model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
+    model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
+    embeds = []
+    for cap in tqdm(all_my_text_caps):
+        input_list = [{"text": str(cap[0])}]
+        embed = model.process(input_list)
+        embeds.append(embed)
+    embeds = torch.cat(embeds)
+    torch.save(embeds, "/playpen/haochenz/synthetic_u/valid_embeds_my_caps.pt")
+    print("Embeddings generated successfully!")
+    print("Embedding size: ", embeds.shape)
+
+
+def run_test_synthetic_u_my_text():
+    # all_my_text_caps = np.load("./synthetic_u/valid_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load("/playpen/haochenz/synthetic_u/test_text_my_caps.npy", allow_pickle=True)
+    # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
+    model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
+    model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
+    embeds = []
+    for cap in tqdm(all_my_text_caps):
+        input_list = [{"text": str(cap[0])}]
+        embed = model.process(input_list)
+        embeds.append(embed)
+    embeds = torch.cat(embeds)
+    torch.save(embeds, "/playpen/haochenz/synthetic_u/test_embeds_my_caps.pt")
+    print("Embeddings generated successfully!")
+    print("Embedding size: ", embeds.shape)
+
+
+if __name__ == '__main__':
+    # run_train_synthetic_u_orig_text()
+    # run_valid_synthetic_u_orig_text()
+    # run_test_synthetic_u_orig_text()
+
+    run_train_synthetic_u_my_text()
+    run_valid_synthetic_u_my_text()
+    run_test_synthetic_u_my_text()
 
 

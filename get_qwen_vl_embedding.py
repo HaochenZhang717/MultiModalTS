@@ -215,7 +215,7 @@ def make_a_dummy_test_set():
     os.makedirs(save_dir, exist_ok=True)
     np.save(os.path.join(save_dir, split + "_attrs_idx.npy"), attrs)
     np.save(os.path.join(save_dir, split + "_ts.npy"), ts)
-    np.save(os.path.join(save_dir, split +" _text_my_caps.npy"), all_my_text_caps)
+    np.save(os.path.join(save_dir, split + "_text_my_caps.npy"), all_my_text_caps)
     torch.save(all_my_text_embeds, os.path.join(save_dir, split + "_embeds_my_caps.pt"))
 
     meta_file_src = "/playpen/haochenz/synthetic_u/meta.json"

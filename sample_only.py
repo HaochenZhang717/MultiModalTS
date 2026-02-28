@@ -57,6 +57,7 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
     dataset = torch.utils.data.TensorDataset(text_embeds.to(device))
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)
 
+    sampled_ts = []
     with torch.no_grad():
         for batch_no, text_embed_batch in enumerate(dataloader):
             batch = make_dummy_batch(text_embed_batch[0], n_steps, n_attrs=1)
@@ -67,7 +68,11 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
             print(f"Batch no={batch_no}, time={end_time - start_time}")
             pred = multi_preds.median(dim=0).values
 
+            sampled_ts.append(multi_preds.cpu())
 
+    sampled_ts = torch.cat(sampled_ts, dim=1)
+
+    return sampled_ts
 
 
 def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder):
@@ -78,7 +83,7 @@ def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_
         # model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
     model = ConditionalGenerator(model_diff_configs, model_cond_configs)
 
-    _cond_gen(
+    sampled_ts = _cond_gen(
         model, text_embeds,
         batch_size=512,
         n_steps=seq_len,
@@ -86,6 +91,8 @@ def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_
         mode="cond_gen",
         sampler="ddpm"
     )
+    torch.save(sampled_ts, os.path.join(output_folder, "sampled_ts.pth"))
+    return sampled_ts
 
 
 def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
@@ -108,8 +115,9 @@ def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
 def run(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=""):
     eval_configs["data"]["folder"] = data_folder
 
-    evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder)
+    sampled_ts = evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder)
 
+    return sampled_ts
 ##### Arguments #####
 parser = argparse.ArgumentParser(description="TSE")
 parser.add_argument("--training_stage", type=str, default="pretrain")
@@ -198,33 +206,23 @@ seed_list = [1, 7, 42]
 df_list = []
 
 eval_record_folder = eval_configs["data"]["folder"]
-for n in range(args.start_runid, args.n_runs):
-    fix_seed = seed_list[n]
-    random.seed(fix_seed)
-    torch.manual_seed(fix_seed)
-    np.random.seed(fix_seed)
 
-    print(f"\nRun: {n}")
-    output_folder = os.path.join(save_folder, str(n))
-    os.makedirs(output_folder, exist_ok=True)
-    eval_configs["eval"]["model_path"] = ""
-    eval_configs["data"]["folder"] = eval_record_folder
-    if args.generator_pretrain_path != "":
-        model_diff_configs["generator_pretrain_path"] = f"{args.generator_pretrain_path}/{n}/ckpts/model_best_loss.pth"
-    else:
-        model_diff_configs["generator_pretrain_path"] = ""
+fix_seed = seed_list[n]
+random.seed(fix_seed)
+torch.manual_seed(fix_seed)
+np.random.seed(fix_seed)
+
+print(f"\nRun:")
+output_folder = os.path.join(save_folder, str(n))
+os.makedirs(output_folder, exist_ok=True)
+eval_configs["eval"]["model_path"] = ""
+eval_configs["data"]["folder"] = eval_record_folder
+if args.generator_pretrain_path != "":
+    model_diff_configs["generator_pretrain_path"] = f"{args.generator_pretrain_path}/{n}/ckpts/model_best_loss.pth"
+else:
+    model_diff_configs["generator_pretrain_path"] = ""
 
 
-    # text_embeds = np.load(args.text_embeds_path, allow_pickle=True)
-    text_embeds = torch.load(args.text_embeds_path, weights_only=False, map_location="cpu")
-    df = run(args.seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
-    n_records = df.shape[0]
-    df.insert(0, column="run", value=[n]*n_records)
-    df_list.append(df)
-
-df = pd.concat(df_list, ignore_index=True)
-path = os.path.join(save_folder, "results.csv")
-df.to_csv(path)
-
-df_stat = df.groupby(["mode", "sampler", "steps", "n_samples"], as_index=False).agg(["mean", "std"])
-df_stat.to_csv(os.path.join(save_folder, "results_stat_condgen.csv"))
+# text_embeds = np.load(args.text_embeds_path, allow_pickle=True)
+text_embeds = torch.load(args.text_embeds_path, weights_only=False, map_location="cpu")
+run(args.seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)

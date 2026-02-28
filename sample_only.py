@@ -210,7 +210,7 @@ for n in range(args.start_runid, args.n_runs):
         model_diff_configs["generator_pretrain_path"] = ""
 
 
-    text_embeds = torch.load(args.text_embeds_path, map_location="cpu")
+    text_embeds = torch.load(args.text_embeds_path, map_location="cpu", weights_only=False)
     df = run(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
     n_records = df.shape[0]
     df.insert(0, column="run", value=[n]*n_records)

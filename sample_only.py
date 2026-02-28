@@ -82,7 +82,8 @@ def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_
         raise NotImplementedError
         # model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
     model = ConditionalGenerator(model_diff_configs, model_cond_configs)
-
+    model.load_state_dict(torch.load(eval_configs["eval"]["model_path"]))
+    print("Loaded model from {}".format(eval_configs["eval"]["model_path"]))
     sampled_ts = _cond_gen(
         model, text_embeds,
         batch_size=512,

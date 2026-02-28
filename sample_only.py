@@ -92,6 +92,7 @@ def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_
         sampler="ddpm"
     )
     torch.save(sampled_ts, os.path.join(output_folder, "sampled_ts.pth"))
+    print("Saved sampled time series to {}".format(os.path.join(output_folder, "sampled_ts.pth")))
     return sampled_ts
 
 

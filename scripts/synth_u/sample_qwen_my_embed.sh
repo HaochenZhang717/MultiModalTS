@@ -1,6 +1,6 @@
 export HF_HOME=/playpen/haochenz/hf_cache
 # todo: need to change
-CUDA_VISIBLE_DEVICES=4 python sample_only.py \
+CUDA_VISIBLE_DEVICES=6 python sample_only.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \

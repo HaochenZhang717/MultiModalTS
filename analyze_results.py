@@ -314,7 +314,7 @@ if __name__ == "__main__":
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_clip_original_text_caps_only/0/samples.pth")
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_embedding/0/samples.pth")
     real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
-    calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
+    # calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
     # analyze_unconditional_results()
     # for i in range(5):
     #     # visualize_sample(

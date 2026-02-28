@@ -66,78 +66,7 @@ class CustomSplit(Dataset):
 
 
         self.ts, self.attrs, self.caps = ts, attrs, caps
-        self.n_samples = self.ts.shape[0]
-        self.n_steps = self.ts.shape[1]
-        self.n_attrs = self.attrs.shape[1]
-        self.time_point = np.arange(self.n_steps)
-
-    def __getitem__(self, idx):
-        cap_id = random.randint(0, len(self.caps[idx])-1)
-        tmp_ts = self.ts[idx]
-        if len(tmp_ts.shape) == 1:
-            tmp_ts = tmp_ts[...,np.newaxis]
-
-        item_dict = {
-            "ts": tmp_ts,
-            "ts_len": tmp_ts.shape[0],
-            "attrs": self.attrs[idx],
-            "cap": self.caps[idx][cap_id],
-            "tp": self.time_point
-        }
-
-        if self.caps_embed is not None:
-            item_dict.update({"cap_embed": self.caps_embed[idx]})
-        return item_dict
-
-    def __len__(self):
-        return self.n_samples
-
-
-
-
-
-class SampleOnlyDataset:
-    def __init__(self, folder, **kwargs):
-        super().__init__()
-        self.folder = folder
-        self._load_meta()
-
-    def _load_meta(self):
-        self.meta = json.load(open(os.path.join(self.folder, "meta.json")))
-        self.attr_list = self.meta["attr_list"]
-        n_attr = len(self.attr_list)
-        self.attr_ids = np.arange(n_attr)
-        self.attr_n_ops = np.array(self.meta["attr_n_ops"])
-
-    def get_split(self, split, text_type,  *args):
-        return SampleOnlySplit(self.folder, text_type, split)
-
-
-class SampleOnlySplit(Dataset):
-    def __init__(self, folder, text_type, split="train"):
-        super().__init__()
-        assert split in ("train", "valid", "test"), "Please specify a valid split."
-        self.split = split
-        self.folder = folder
-        self.text_type = text_type
-        self._load_data()
-
-        print(f"Split: {self.split}, total samples {self.n_samples}.")
-
-    def _load_data(self):
-        # ts = np.load(os.path.join(self.folder, self.split+"_ts.npy"))     # [n_samples, n_steps]
-        # attrs = np.load(os.path.join(self.folder, self.split+"_attrs_idx.npy"))  # [n_samples, n_attrs]
-        caps = np.load(os.path.join(self.folder, self.split + fr"_text_my_caps.npy"), allow_pickle=True)  # need to change if I want
-        caps_embed_path = os.path.join(self.folder, self.split + fr"_embeds_caps.pt")
-        caps_embed = torch.load(caps_embed_path, map_location="cpu")
-
-        self.caps = caps
-        self.caps_embed = caps_embed
-
-        n_samples = len(self.caps)
-        self.ts = np.random.rand(n_samples, 128)
-        self.attrs = np.random.rand(n_samples, 128)
-        # self.ts, self.attrs, self.caps = ts, attrs, caps
+        breakpoint()
         self.n_samples = self.ts.shape[0]
         self.n_steps = self.ts.shape[1]
         self.n_attrs = self.attrs.shape[1]

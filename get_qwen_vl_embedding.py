@@ -198,6 +198,14 @@ def run_sample_synthetic_u_my_text_xl():
     print("Embedding size: ", embeds.shape)
 
 
+
+def make_a_dummy_test_set():
+    all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
+    all_my_text_embeds = torch.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples_embed.pt", map_location="cpu")
+
+
+
+
 if __name__ == '__main__':
     # run_train_synthetic_u_orig_text()
     # run_valid_synthetic_u_orig_text()

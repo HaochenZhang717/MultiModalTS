@@ -53,6 +53,7 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
     print(f"Evaluating the model with mode={mode} and sampler={sampler}")
     model.eval().to(device)
     text_embeds = text_embeds.to(device)
+    breakpoint()
     n_samples = 10
     dataset = torch.utils.data.TensorDataset(text_embeds.to(device))
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)

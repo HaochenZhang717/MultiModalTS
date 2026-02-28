@@ -207,13 +207,13 @@ df_list = []
 
 eval_record_folder = eval_configs["data"]["folder"]
 
-fix_seed = seed_list[n]
+fix_seed = seed_list[0]
 random.seed(fix_seed)
 torch.manual_seed(fix_seed)
 np.random.seed(fix_seed)
 
 print(f"\nRun:")
-output_folder = os.path.join(save_folder, str(n))
+output_folder = os.path.join(save_folder, str(0))
 os.makedirs(output_folder, exist_ok=True)
 eval_configs["eval"]["model_path"] = ""
 eval_configs["data"]["folder"] = eval_record_folder

@@ -52,7 +52,7 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
     print("\n-------------------------------")
     print(f"Evaluating the model with mode={mode} and sampler={sampler}")
     model.eval().to(device)
-    text_embeds = torch.from_numpy(text_embeds, device=device)
+    text_embeds = text_embeds.to(device)
     n_samples = 10
     dataset = torch.utils.data.TensorDataset(text_embeds.to(device))
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)
@@ -216,7 +216,8 @@ for n in range(args.start_runid, args.n_runs):
         model_diff_configs["generator_pretrain_path"] = ""
 
 
-    text_embeds = np.load(args.text_embeds_path, allow_pickle=True)
+    # text_embeds = np.load(args.text_embeds_path, allow_pickle=True)
+    text_embeds = torch.load(args.text_embeds_path, weights_only=False, map_location="cpu")
     df = run(args.seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
     n_records = df.shape[0]
     df.insert(0, column="run", value=[n]*n_records)

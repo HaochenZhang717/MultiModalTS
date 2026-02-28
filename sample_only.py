@@ -81,7 +81,7 @@ def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_
 
     _cond_gen(
         model, text_embeds,
-        batch_size=model_diff_configs["batch_size"],
+        batch_size=512,
         n_steps=seq_len,
         device=model_diff_configs["device"],
         mode="cond_gen",

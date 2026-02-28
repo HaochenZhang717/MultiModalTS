@@ -16,71 +16,77 @@ from evaluation.base_evaluator import BaseEvaluator
 from time import time
 
 
+def make_dummy_batch(text_embed_batch, n_steps, n_attrs):
+    """
+    text_embed_batch: torch.Tensor [B, D]
+
+    Returns:
+        dict with same structure as CustomSplit.__getitem__ batched
+    """
+
+    B = text_embed_batch.shape[0]
+    device = text_embed_batch.device
+
+    # Dummy time series (not used)
+    ts = torch.zeros(B, n_steps, 1, device=device)
+
+    batch = {
+        "ts": ts,                              # [B, T, 1]
+        "ts_len": torch.full((B,), n_steps),   # [B]
+        "attrs": torch.zeros(B, n_attrs, device=device),
+        "cap": [""] * B,                       # dummy text
+        "tp": torch.arange(n_steps).unsqueeze(0).repeat(B, 1),
+        "cap_embed": text_embed_batch          # [B, D]
+    }
+
+    return batch
+
+
 def save_configs(configs, path):
     print(json.dumps(configs, indent=4))
     with open(path, "w") as f:
         yaml.dump(configs, f, yaml.SafeDumper)
 
-def train(training_stage, train_configs, model_diff_configs, model_cond_configs, eval_configs,  output_folder):
-    train_configs["train"]["output_folder"] = output_folder
 
-    dataset = GenerationDataset(train_configs["data"])
+def _cond_gen(model, text_embeds, batch_size, device, mode="cond_gen", sampler="ddpm"):
+    print("\n-------------------------------")
+    print(f"Evaluating the model with mode={mode} and sampler={sampler}")
+    model.eval().to(device)
+    n_samples = 10
+    dataset = torch.utils.data.TensorDataset(text_embeds.to(device))
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=False)
 
-    if training_stage == "pretrain":
-        model = UnConditionalGenerator(model_diff_configs)
-    elif training_stage == "finetune":
-        if "attrs" in model_cond_configs.keys():
-            model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
-        model = ConditionalGenerator(model_diff_configs, model_cond_configs)
-
-    print("\n***** Train Configs *****")
-    path = os.path.join(output_folder, "train_configs.yaml")
-    save_configs(train_configs, path)
-
-    print("\n***** Model Configs *****")
-    path = os.path.join(output_folder, "model_diff_configs.yaml")
-    save_configs(model_diff_configs, path)
-    if training_stage == "finetune":
-        path = os.path.join(output_folder, "model_cond_configs.yaml")
-        save_configs(model_cond_configs, path)
-
-    pretrainer = Trainer(train_configs["train"], eval_configs, dataset, model)
-    print("Begin training!")
-    pretrainer.train()
+    with torch.no_grad():
+        for batch_no, text_embed_batch in enumerate(dataloader):
+            batch = make_dummy_batch(text_embed_batch)
+            start_time = time.time()
+            multi_preds = model.generate(batch, n_samples, sampler)
+            multi_preds = multi_preds.permute(0, 1, 3, 2)
+            pred = multi_preds.median(dim=0).values
 
 
-def evaluate(training_stage, eval_configs, model_diff_configs, model_cond_configs, output_folder):
+
+
+def evaluate(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder):
     eval_configs["eval"]["model_path"] = os.path.join(output_folder, "ckpts/model_best_loss.pth")
 
-    dataset = GenerationDataset(eval_configs["data"])
+    if "attrs" in model_cond_configs.keys():
+        raise NotImplementedError
+        # model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
+    model = ConditionalGenerator(model_diff_configs, model_cond_configs)
 
-    if training_stage == "pretrain":
-        model = UnConditionalGenerator(model_diff_configs)
-    elif training_stage == "finetune":
-        if "attrs" in model_cond_configs.keys():
-            model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
-        model = ConditionalGenerator(model_diff_configs, model_cond_configs)
-
-    print("\n***** Evaluate Configs *****")
-    path = os.path.join(output_folder, "eval_configs.yaml")
-    save_configs(eval_configs, path=path)
-    # print("clip_config_path" in eval_configs["eval"].keys())
-    # breakpoint()
-    evaluator = BaseEvaluator(eval_configs["eval"], dataset, model)
-
-    df = _evaluate_cond_gen(evaluator, output_folder)
-    return df
+    _cond_gen(
+        model, text_embeds,
+        batch_size=model_diff_configs["batch_size"],
+        device=model_diff_configs["device"],
+        mode="cond_gen",
+        sampler="ddpm"
+    )
 
 
 def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
     evaluator.n_samples = n_sample
     res_dict, result_ts_dict = evaluator.evaluate(mode="cond_gen", sampler=sampler, save_pred=False)
-    # for k, v in result_ts_dict.items():
-        # if isinstance(v, torch.Tensor):
-        #     print(k)
-        #     print(v.shape)
-        #     print("-" * 50)
-    # breakpoint()
     torch.save(result_ts_dict, os.path.join(output_folder, "samples.pth"))
     print("Samples saved in {}".format(os.path.join(output_folder, "samples.pth")))
     info = {
@@ -95,15 +101,10 @@ def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
     return df
 
 
-def run(training_stage, train_configs, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder="", only_evaluate=False):
-    if only_evaluate == False:
-        train(training_stage, train_configs, model_diff_configs, model_cond_configs, eval_configs, output_folder)
-
+def run(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=""):
     eval_configs["data"]["folder"] = data_folder
-    df = evaluate(training_stage, eval_configs, model_diff_configs, model_cond_configs, output_folder)
-    path = os.path.join(output_folder, "results.csv")
-    df.to_csv(path)
-    return df
+
+    evaluate(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder)
 
 ##### Arguments #####
 parser = argparse.ArgumentParser(description="TSE")
@@ -206,8 +207,10 @@ for n in range(args.start_runid, args.n_runs):
         model_diff_configs["generator_pretrain_path"] = f"{args.generator_pretrain_path}/{n}/ckpts/model_best_loss.pth"
     else:
         model_diff_configs["generator_pretrain_path"] = ""
-    df = run(args.training_stage, train_configs, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder, only_evaluate=args.only_evaluate)
 
+
+    text_embeds = torch.load(args.text_embeds_path, map_location="cpu")
+    df = run(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
     n_records = df.shape[0]
     df.insert(0, column="run", value=[n]*n_records)
     df_list.append(df)

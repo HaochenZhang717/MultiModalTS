@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from .data import CustomDataset
 
 datasets = {
-    "custom": CustomDataset
+    "custom": CustomDataset,
 }
 
 class GenerationDataset:

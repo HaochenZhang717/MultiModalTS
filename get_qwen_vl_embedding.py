@@ -167,6 +167,7 @@ def run_test_synthetic_u_my_text():
 def run_sample_synthetic_u_my_text():
     all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
     print("DiTDH-S-samples shape: ", all_my_text_caps.shape)
+    print(all_my_text_caps[0])
     # all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples.npy", allow_pickle=True)
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)

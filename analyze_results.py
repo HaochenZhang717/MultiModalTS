@@ -244,6 +244,7 @@ def calculate_all_scores(results_path):
     disc_score_list = []
     pred_score_list = []
     for i in range(10):
+        print(i)
         fake = results_dict["sampled_ts"][i]
         discriminative_score = discriminative_score_metrics(
             real, fake,

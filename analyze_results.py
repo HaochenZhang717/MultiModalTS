@@ -292,10 +292,10 @@ def calculate_all_scores_two_paths(real_path, fake_path):
             real.shape[-1],
             device,
         )
-        # print(f"Discriminative Score Metrics: {discriminative_score}")
+        print(f"Discriminative Score Metrics: {discriminative_score}")
 
         predictive_score = predictive_score_metrics(real, fake, device)
-        # print(f"Predictive Score Metrics: {predictive_score}")
+        print(f"Predictive Score Metrics: {predictive_score}")
         disc_score_list.append(discriminative_score)
         pred_score_list.append(predictive_score)
 

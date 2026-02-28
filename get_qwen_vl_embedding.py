@@ -1,3 +1,5 @@
+import os
+
 from models.encoders.qwen3_vl_embedding import Qwen3VLEmbedder
 import numpy as np
 import torch
@@ -202,6 +204,16 @@ def run_sample_synthetic_u_my_text_xl():
 def make_a_dummy_test_set():
     all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
     all_my_text_embeds = torch.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples_embed.pt", map_location="cpu")
+    num_samples = all_my_text_embeds.shape[0]
+    ts = np.zeros(num_samples, 128, 1)
+    attrs = np.zeros(num_samples, 3)
+
+    split="test"
+    save_dir = "/playpen/haochenz/diffusion_prior_results/for_sampling"
+    np.save(os.path.join(save_dir, split + "_attrs_idx.npy"), attrs)
+    np.save(os.path.join(save_dir, split + "_ts.npy"), ts)
+    np.save(os.path.join(save_dir, split +" _text_my_caps.npy"), all_my_text_caps)
+    torch.save(all_my_text_embeds, os.path.join(save_dir, split + "_embeds_my_caps.pt"))
 
 
 
@@ -214,8 +226,9 @@ if __name__ == '__main__':
     # run_train_synthetic_u_my_text()
     # run_valid_synthetic_u_my_text()
     # run_test_synthetic_u_my_text()
-    run_sample_synthetic_u_my_text_s()
-    run_sample_synthetic_u_my_text_xl()
+    # run_sample_synthetic_u_my_text_s()
+    # run_sample_synthetic_u_my_text_xl()
 
+    make_a_dummy_test_set()
 
 

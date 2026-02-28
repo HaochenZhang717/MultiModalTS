@@ -324,7 +324,10 @@ if __name__ == "__main__":
         real_path="/playpen/haochenz/synthetic_u/test_ts.npy",
         fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
     )
-
+    calculate_all_scores_two_paths(
+        real_path="/playpen/haochenz/synthetic_u/valid_ts.npy",
+        fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
+    )
     # calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
     # analyze_unconditional_results()
     # for i in range(5):

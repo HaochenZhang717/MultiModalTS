@@ -164,11 +164,10 @@ def run_test_synthetic_u_my_text():
     print("Embedding size: ", embeds.shape)
 
 
-def run_sample_synthetic_u_my_text():
+def run_sample_synthetic_u_my_text_s():
     all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
     print("DiTDH-S-samples shape: ", all_my_text_caps.shape)
     print(all_my_text_caps[0])
-    # all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples.npy", allow_pickle=True)
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
     embeds = []
@@ -178,9 +177,26 @@ def run_sample_synthetic_u_my_text():
         embeds.append(embed)
     embeds = torch.cat(embeds)
     torch.save(embeds, "/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples_embed.pt")
-    # torch.save(embeds, "/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples_embed.pt")
     print("Embeddings generated successfully!")
     print("Embedding size: ", embeds.shape)
+
+
+def run_sample_synthetic_u_my_text_xl():
+    all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples.npy", allow_pickle=True)
+    print("DiTDH-XL-samples shape: ", all_my_text_caps.shape)
+    print(all_my_text_caps[0])
+    model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
+    model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
+    embeds = []
+    for cap in tqdm(all_my_text_caps):
+        input_list = [{"text": str(cap[0])}]
+        embed = model.process(input_list)
+        embeds.append(embed)
+    embeds = torch.cat(embeds)
+    torch.save(embeds, "/playpen/haochenz/diffusion_prior_results/DiTDH-XL-samples_embed.pt")
+    print("Embeddings generated successfully!")
+    print("Embedding size: ", embeds.shape)
+
 
 if __name__ == '__main__':
     # run_train_synthetic_u_orig_text()
@@ -190,6 +206,8 @@ if __name__ == '__main__':
     # run_train_synthetic_u_my_text()
     # run_valid_synthetic_u_my_text()
     # run_test_synthetic_u_my_text()
-    run_sample_synthetic_u_my_text()
+    run_sample_synthetic_u_my_text_s()
+    run_sample_synthetic_u_my_text_xl()
+
 
 

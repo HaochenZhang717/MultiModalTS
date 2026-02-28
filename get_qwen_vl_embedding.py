@@ -5,6 +5,8 @@ import numpy as np
 import torch
 from typing import List, Dict
 from tqdm import tqdm
+import shutil
+
 
 def hugging_face_demo():
     # Define a list of query texts
@@ -216,6 +218,9 @@ def make_a_dummy_test_set():
     np.save(os.path.join(save_dir, split +" _text_my_caps.npy"), all_my_text_caps)
     torch.save(all_my_text_embeds, os.path.join(save_dir, split + "_embeds_my_caps.pt"))
 
+    meta_file_src = "/playpen/haochenz/synthetic_u/meta.json"
+    meta_file_dst = "/playpen/haochenz/diffusion_prior_results/for_sampling/meta.json"
+    shutil.copy(meta_file_src, meta_file_dst)
 
 
 

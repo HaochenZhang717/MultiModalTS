@@ -210,6 +210,7 @@ def make_a_dummy_test_set():
 
     split="test"
     save_dir = "/playpen/haochenz/diffusion_prior_results/for_sampling"
+    os.makedirs(save_dir, exist_ok=True)
     np.save(os.path.join(save_dir, split + "_attrs_idx.npy"), attrs)
     np.save(os.path.join(save_dir, split + "_ts.npy"), ts)
     np.save(os.path.join(save_dir, split +" _text_my_caps.npy"), all_my_text_caps)

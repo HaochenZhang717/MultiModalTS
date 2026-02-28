@@ -321,7 +321,7 @@ if __name__ == "__main__":
     # real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
 
     calculate_all_scores_two_paths(
-        real_path="/playpen/haochenz/synthetic_u/train_ts.npy",
+        real_path="/playpen/haochenz/synthetic_u/test_ts.npy",
         fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
     )
 

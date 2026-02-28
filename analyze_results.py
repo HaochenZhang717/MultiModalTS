@@ -303,7 +303,7 @@ def calculate_all_scores_given_real(real, fake_path):
 
     pred_mean = pred_score_arr.mean()
     pred_std = pred_score_arr.std(ddof=1)
-    print(results_path)
+    print(fake_path)
     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
     print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
     print("---"*50)

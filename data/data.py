@@ -66,7 +66,6 @@ class CustomSplit(Dataset):
 
 
         self.ts, self.attrs, self.caps = ts, attrs, caps
-        breakpoint()
         self.n_samples = self.ts.shape[0]
         self.n_steps = self.ts.shape[1]
         self.n_attrs = self.attrs.shape[1]

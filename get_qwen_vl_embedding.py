@@ -205,8 +205,8 @@ def make_a_dummy_test_set():
     all_my_text_caps = np.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy", allow_pickle=True)
     all_my_text_embeds = torch.load("/playpen/haochenz/diffusion_prior_results/DiTDH-S-samples_embed.pt", map_location="cpu")
     num_samples = all_my_text_embeds.shape[0]
-    ts = np.zeros(num_samples, 128, 1)
-    attrs = np.zeros(num_samples, 3)
+    ts = np.zeros((num_samples, 128, 1))
+    attrs = np.zeros((num_samples, 3))
 
     split="test"
     save_dir = "/playpen/haochenz/diffusion_prior_results/for_sampling"

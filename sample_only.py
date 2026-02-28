@@ -59,9 +59,7 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
 
     with torch.no_grad():
         for batch_no, text_embed_batch in enumerate(dataloader):
-            breakpoint()
-            batch = make_dummy_batch(text_embed_batch, n_steps, n_attrs=1)
-            breakpoint()
+            batch = make_dummy_batch(text_embed_batch[0], n_steps, n_attrs=1)
             start_time = time.time()
             multi_preds = model.generate(batch, n_samples, sampler)
             multi_preds = multi_preds.permute(0, 1, 3, 2)

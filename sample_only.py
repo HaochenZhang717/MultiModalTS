@@ -60,10 +60,10 @@ def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", 
     with torch.no_grad():
         for batch_no, text_embed_batch in enumerate(dataloader):
             batch = make_dummy_batch(text_embed_batch[0], n_steps, n_attrs=1)
-            start_time = time.time()
+            start_time = time()
             multi_preds = model.generate(batch, n_samples, sampler)
             multi_preds = multi_preds.permute(0, 1, 3, 2)
-            end_time = time.time()
+            end_time = time()
             print(f"Batch no={batch_no}, time={end_time - start_time}")
             pred = multi_preds.median(dim=0).values
 

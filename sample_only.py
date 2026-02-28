@@ -48,7 +48,7 @@ def save_configs(configs, path):
         yaml.dump(configs, f, yaml.SafeDumper)
 
 
-def _cond_gen(model, text_embeds, batch_size, device, mode="cond_gen", sampler="ddpm"):
+def _cond_gen(model, text_embeds, n_steps, batch_size, device, mode="cond_gen", sampler="ddpm"):
     print("\n-------------------------------")
     print(f"Evaluating the model with mode={mode} and sampler={sampler}")
     model.eval().to(device)
@@ -59,16 +59,19 @@ def _cond_gen(model, text_embeds, batch_size, device, mode="cond_gen", sampler="
 
     with torch.no_grad():
         for batch_no, text_embed_batch in enumerate(dataloader):
-            batch = make_dummy_batch(text_embed_batch)
+            batch = make_dummy_batch(text_embed_batch, n_steps, n_attrs=1)
+            breakpoint()
             start_time = time.time()
             multi_preds = model.generate(batch, n_samples, sampler)
             multi_preds = multi_preds.permute(0, 1, 3, 2)
+            end_time = time.time()
+            print(f"Batch no={batch_no}, time={end_time - start_time}")
             pred = multi_preds.median(dim=0).values
 
 
 
 
-def evaluate(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder):
+def evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder):
     eval_configs["eval"]["model_path"] = os.path.join(output_folder, "ckpts/model_best_loss.pth")
 
     if "attrs" in model_cond_configs.keys():
@@ -79,6 +82,7 @@ def evaluate(text_embeds, eval_configs, model_diff_configs, model_cond_configs, 
     _cond_gen(
         model, text_embeds,
         batch_size=model_diff_configs["batch_size"],
+        n_steps=seq_len,
         device=model_diff_configs["device"],
         mode="cond_gen",
         sampler="ddpm"
@@ -102,10 +106,10 @@ def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
     return df
 
 
-def run(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=""):
+def run(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=""):
     eval_configs["data"]["folder"] = data_folder
 
-    evaluate(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder)
+    evaluate(seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder)
 
 ##### Arguments #####
 parser = argparse.ArgumentParser(description="TSE")
@@ -141,6 +145,7 @@ parser.add_argument("--only_evaluate", type=bool, default=False)
 
 # extra parameters
 parser.add_argument("--text_embeds_path", type=str, required=True)
+parser.add_argument("--seq_len", type=int, required=True)
 parser.add_argument("--text_type", type=str, required=True,
                     choices=["original_text_caps_only", "original_text_embeds", "my_generated_text", "my_generated_text_embeds"]
                     )
@@ -212,7 +217,7 @@ for n in range(args.start_runid, args.n_runs):
 
 
     text_embeds = np.load(args.text_embeds_path, allow_pickle=True)
-    df = run(text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
+    df = run(args.seq_len, text_embeds, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder)
     n_records = df.shape[0]
     df.insert(0, column="run", value=[n]*n_records)
     df_list.append(df)

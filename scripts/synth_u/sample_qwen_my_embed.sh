@@ -17,4 +17,5 @@ CUDA_VISIBLE_DEVICES=6 python sample_only.py \
     --epochs 700 \
     --batch_size 512 \
     --clip_cache_path "" \
-    --text_embeds_path /playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy
+    --text_embeds_path /playpen/haochenz/diffusion_prior_results/DiTDH-S-samples.npy \
+    --seq_len 128

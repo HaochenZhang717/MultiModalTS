@@ -273,16 +273,20 @@ def calculate_all_scores(results_path):
     return real
 
 
-def calculate_all_scores_given_real(real, fake_path):
+def calculate_all_scores_two_paths(real_path, fake_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    real = real.to(device)
 
-    sampled_ts = torch.load(fake_path, map_location=device)
+    real = np.load(real_path, allow_pickle=True)
+    real = torch.from_numpy(real).to(device)
+    print(f"real shape = {real.shape}")
+    results_dict = torch.load(fake_path, map_location="cpu", weights_only=False)
+    print(f"fake shape = {results_dict['sampled_ts'].shape}")
 
     disc_score_list = []
     pred_score_list = []
     for i in range(10):
-        fake = sampled_ts[i]
+        print(i)
+        fake = results_dict["sampled_ts"][i]
         discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
@@ -310,10 +314,17 @@ def calculate_all_scores_given_real(real, fake_path):
     return real
 
 
+
 if __name__ == "__main__":
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_clip_original_text_caps_only/0/samples.pth")
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_embedding/0/samples.pth")
-    real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
+    # real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
+
+    calculate_all_scores_two_paths(
+        real_path="/playpen/haochenz/synthetic_u/train_ts.npy",
+        fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
+    )
+
     # calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
     # analyze_unconditional_results()
     # for i in range(5):

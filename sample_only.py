@@ -34,7 +34,7 @@ def make_dummy_batch(text_embed_batch, n_steps, n_attrs):
         "ts": ts,                              # [B, T, 1]
         "ts_len": torch.full((B,), n_steps),   # [B]
         "attrs": torch.zeros(B, n_attrs, device=device),
-        "cap": [""] * B,                       # dummy text
+        "cap": ["dummy caption"] * B,                       # dummy text
         "tp": torch.arange(n_steps).unsqueeze(0).repeat(B, 1),
         "cap_embed": text_embed_batch          # [B, D]
     }

@@ -56,7 +56,8 @@ class CustomSplit(Dataset):
                 self.caps_embed = caps_embed
                 print("using precomputed caps embedding.")
         elif self.text_type == "my_generated_text_embeds":
-            caps_embed_path = os.path.join(self.folder, self.split + fr"_embeds_my_caps.pt")
+            # caps_embed_path = os.path.join(self.folder, self.split + fr"_embeds_my_caps.pt")
+            caps_embed_path = os.path.join(self.folder, self.split + fr"_text_my_caps_v2_embeds.pt")
             if os.path.exists(caps_embed_path):
                 # raise FileNotFoundError(f"Embedding file not found: {caps_embed_path}")
                 # caps_embed = np.load(caps_embed_path, allow_pickle=True)

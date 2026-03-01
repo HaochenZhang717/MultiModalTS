@@ -261,23 +261,23 @@ if __name__ == '__main__':
     # run_test_synthetic_u_my_text()
 
     get_text_embedding(
-        caps_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples_v2.npy",
-        save_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds.pt"
+        caps_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2.npy",
+        save_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds.pt"
     )
 
     get_text_embedding(
-        caps_path="/playpen-shared/haochenz/synthetic_u/train_text_my_caps_v2.npy",
-        save_path="/playpen-shared/haochenz/synthetic_u/train_text_my_caps_v2_embeds.pt"
+        caps_path="/playpen/haochenz/synthetic_u/train_text_my_caps_v2.npy",
+        save_path="/playpen/haochenz/synthetic_u/train_text_my_caps_v2_embeds.pt"
     )
 
     get_text_embedding(
-        caps_path="/playpen-shared/haochenz/synthetic_u/valid_text_my_caps_v2.npy",
-        save_path="/playpen-shared/haochenz/synthetic_u/valid_text_my_caps_v2_embeds.pt"
+        caps_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_v2.npy",
+        save_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_v2_embeds.pt"
     )
 
     get_text_embedding(
-        caps_path="/playpen-shared/haochenz/synthetic_u/test_text_my_caps_v2.npy",
-        save_path="/playpen-shared/haochenz/synthetic_u/test_text_my_caps_v2_embeds.pt"
+        caps_path="/playpen/haochenz/synthetic_u/test_text_my_caps_v2.npy",
+        save_path="/playpen/haochenz/synthetic_u/test_text_my_caps_v2_embeds.pt"
     )
 
     # run_sample_synthetic_u_my_text_s()

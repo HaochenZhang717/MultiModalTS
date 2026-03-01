@@ -236,7 +236,11 @@ def get_text_embedding(caps_path, save_path):
     model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
     model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
     embeds = []
+    printed = False
     for cap in tqdm(all_my_text_caps):
+        if not printed:
+            print(str(cap[0]))
+            printed = True
         input_list = [{"text": str(cap[0])}]
         embed = model.process(input_list)
         embeds.append(embed)
@@ -257,8 +261,8 @@ if __name__ == '__main__':
     # run_test_synthetic_u_my_text()
 
     get_text_embedding(
-        caps_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples.npy",
-        save_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples-embeds.pt"
+        caps_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples_v2.npy",
+        save_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds.pt"
     )
 
     get_text_embedding(

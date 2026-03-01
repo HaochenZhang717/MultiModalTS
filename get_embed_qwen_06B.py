@@ -30,10 +30,10 @@ def embed_numpy_to_pt(
 
     for start in tqdm(range(0, N, batch_size), desc="Encoding"):
         if start == 0:
-            print(texts_array[start])
+            print(texts_array[start][0])
         end = min(start + batch_size, N)
         # batch_texts = texts_array[start:end].tolist()
-        batch_texts = [t[0] if isinstance(t, list) else t for t in texts_array[start:end]]
+        batch_texts = [t[0] for t in texts_array[start:end]]
         emb = model.encode(
             batch_texts,
             convert_to_tensor=True,
@@ -52,26 +52,34 @@ def embed_numpy_to_pt(
 
 
 if __name__ == "__main__":
-    # embed_numpy_to_pt(
-    #     texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps_v2.npy", allow_pickle=True),
-    #     output_pt_path="/playpen/haochenz/synthetic_u/train_text_my_caps_v2_embeds_qwen06b.pt",
-    #     batch_size=64,
-    #     device="cuda" if torch.cuda.is_available() else "cpu",
-    # )
-    #
-    # embed_numpy_to_pt(
-    #     texts_array=np.load("/playpen/haochenz/synthetic_u/test_text_my_caps_v2.npy", allow_pickle=True),
-    #     output_pt_path="/playpen/haochenz/synthetic_u/test_text_my_caps_v2_embeds_qwen06b.pt",
-    #     batch_size=64,
-    #     device="cuda" if torch.cuda.is_available() else "cpu",
-    # )
-    #
-    # embed_numpy_to_pt(
-    #     texts_array=np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps_v2.npy", allow_pickle=True),
-    #     output_pt_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_v2_embeds_qwen06b.pt",
-    #     batch_size=64,
-    #     device="cuda" if torch.cuda.is_available() else "cpu",
-    # )
+    embed_numpy_to_pt(
+        texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/synthetic_u/train_text_my_caps_v2_embeds_qwen06b.pt",
+        batch_size=64,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
+    embed_numpy_to_pt(
+        texts_array=np.load("/playpen/haochenz/synthetic_u/test_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/synthetic_u/test_text_my_caps_v2_embeds_qwen06b.pt",
+        batch_size=64,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
+    embed_numpy_to_pt(
+        texts_array=np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_v2_embeds_qwen06b.pt",
+        batch_size=64,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
+    embed_numpy_to_pt(
+        texts_array=np.load("/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds_qwen06b.pt",
+        batch_size=64,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+
 
     embed_numpy_to_pt(
         texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps.npy", allow_pickle=True),

@@ -223,6 +223,23 @@ def make_a_dummy_test_set():
     shutil.copy(meta_file_src, meta_file_dst)
 
 
+def get_text_embedding(caps_path, save_path):
+    # all_my_text_caps = np.load("./synthetic_u/train_text_my_caps.npy", allow_pickle=True)
+    all_my_text_caps = np.load(caps_path, allow_pickle=True)
+    # model_name_or_path = "/Users/zhc/Downloads/Qwen3-VL-Embedding-2B"
+    model_name_or_path = "Qwen/Qwen3-VL-Embedding-2B"
+    model = Qwen3VLEmbedder(model_name_or_path=model_name_or_path)
+    embeds = []
+    for cap in tqdm(all_my_text_caps):
+        input_list = [{"text": str(cap[0])}]
+        embed = model.process(input_list)
+        embeds.append(embed)
+    embeds = torch.cat(embeds)
+    torch.save(embeds, save_path)
+    print("Embeddings generated successfully!")
+    print("Embedding size: ", embeds.shape)
+
+
 
 if __name__ == '__main__':
     # run_train_synthetic_u_orig_text()
@@ -232,9 +249,30 @@ if __name__ == '__main__':
     # run_train_synthetic_u_my_text()
     # run_valid_synthetic_u_my_text()
     # run_test_synthetic_u_my_text()
+
+    get_text_embedding(
+        caps_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples.npy",
+        save_path="/playpen-shared/haochenz/synthetic_u/DiTDH-S-samples-embeds.pt"
+    )
+
+    get_text_embedding(
+        caps_path="/playpen-shared/haochenz/synthetic_u/train_text_my_caps_v2.npy",
+        save_path="/playpen-shared/haochenz/synthetic_u/train_text_my_caps_v2_embeds.pt"
+    )
+
+    get_text_embedding(
+        caps_path="/playpen-shared/haochenz/synthetic_u/valid_text_my_caps_v2.npy",
+        save_path="/playpen-shared/haochenz/synthetic_u/valid_text_my_caps_v2_embeds.pt"
+    )
+
+    get_text_embedding(
+        caps_path="/playpen-shared/haochenz/synthetic_u/test_text_my_caps_v2.npy",
+        save_path="/playpen-shared/haochenz/synthetic_u/test_text_my_caps_v2_embeds.pt"
+    )
+
     # run_sample_synthetic_u_my_text_s()
     # run_sample_synthetic_u_my_text_xl()
 
-    make_a_dummy_test_set()
+    # make_a_dummy_test_set()
 
 

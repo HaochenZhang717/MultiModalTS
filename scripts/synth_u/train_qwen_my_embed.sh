@@ -18,3 +18,4 @@ CUDA_VISIBLE_DEVICES=6 python run.py \
     --batch_size 512 \
     --clip_cache_path "" \
     --only_evaluate true
+

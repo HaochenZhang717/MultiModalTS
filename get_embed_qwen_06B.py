@@ -32,8 +32,8 @@ def embed_numpy_to_pt(
         if start == 0:
             print(texts_array[start])
         end = min(start + batch_size, N)
-        batch_texts = texts_array[start:end].tolist()
-
+        # batch_texts = texts_array[start:end].tolist()
+        batch_texts = [t[0] for t in texts_array[start:end]]
         emb = model.encode(
             batch_texts,
             convert_to_tensor=True,

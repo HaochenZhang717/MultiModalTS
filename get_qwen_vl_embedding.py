@@ -9,9 +9,9 @@ import shutil
 
 import os
 
-os.environ["HF_HOME"] = "/playpen-shared/haochenz/hf_cache"
-os.environ["TRANSFORMERS_CACHE"] = "/playpen-shared/haochenz/hf_cache"
-os.environ["HF_DATASETS_CACHE"] = "/playpen-shared/haochenz/hf_cache"
+os.environ["HF_HOME"] = "/playpen/haochenz/hf_cache"
+os.environ["TRANSFORMERS_CACHE"] = "/playpen/haochenz/hf_cache"
+os.environ["HF_DATASETS_CACHE"] = "/playpen/haochenz/hf_cache"
 
 
 def hugging_face_demo():

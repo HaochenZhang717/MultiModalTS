@@ -41,7 +41,7 @@ class CustomSplit(Dataset):
         if "original_text" in self.text_type:
             caps = np.load(os.path.join(self.folder, self.split+fr"_text_caps.npy"), allow_pickle=True) # need to change if I want
         elif "my_generated_text" in self.text_type:
-            caps = np.load(os.path.join(self.folder, self.split+fr"_text_my_caps.npy"), allow_pickle=True) # need to change if I want
+            caps = np.load(os.path.join(self.folder, self.split+fr"_text_my_caps_v2.npy"), allow_pickle=True) # need to change if I want
         else:
             raise NotImplementedError
 

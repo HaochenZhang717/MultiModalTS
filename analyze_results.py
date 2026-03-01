@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
     calculate_all_scores_two_paths(
         real_path="/playpen/haochenz/synthetic_u/train_ts.npy",
-        fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embeds_v2/0/samples.pth"
+        fake_path="/playpen/haochenz/save/synth_u/qwen_my_embeds_v2/0/samples.pth"
     )
     # calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
     # analyze_unconditional_results()

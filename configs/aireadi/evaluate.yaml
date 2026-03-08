@@ -1,0 +1,16 @@
+### Dataset ###
+data:
+  name: ai_readi
+  data_path: /playpen-shared/haochenz/AI-READI
+  window_size: 128
+  retinal_resize: [256, 337]
+
+### Evaluate ###
+eval:
+  n_samples: 10
+  model_path: ""
+  batch_size: 128
+  display_interval: 1
+  device: cuda:0
+
+  cache_folder: ./cache/synth-m_text

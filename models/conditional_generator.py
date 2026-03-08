@@ -62,18 +62,25 @@ class ConditionalGenerator(nn.Module):
                 nn.Linear(cond_configs["multimodal"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"])
             )
             self.cond_projector = self.cond_projector.to(self.device)
-
         elif cond_configs["cond_modal"] == "aireadi":
-            cond_configs["multimodal"]["device"] = self.device
-            # self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
-            self.cond_projector = nn.Sequential(
-                nn.Linear(cond_configs["multimodal"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
-                nn.LayerNorm(cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+            cond_configs["aireadi"]["device"] = self.device
+            self.cond_projector_0 = nn.Sequential(
+                nn.Linear(cond_configs["aireadi"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.LayerNorm(cond_configs["aireadi"]["vl_emb_hidden_dim"]),
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Linear(cond_configs["multimodal"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"])
+                nn.Linear(cond_configs["aireadi"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"]),
             )
-            self.cond_projector = self.cond_projector.to(self.device)
 
+            self.cond_projector_1 = TextProjectorMVarMScaleMStep(
+                    n_var=diff_configs["diffusion"]["n_var"],
+                    n_scale=diff_configs["diffusion"]["multipatch_num"],
+                    n_steps=diff_configs["diffusion"]["num_steps"],
+                    n_stages=cond_configs["aireadi"]["num_stages"],
+                    dim_in=cond_configs["aireadi"]["text_emb"],
+                    dim_out=diff_configs["diffusion"]["channels"])
+
+            self.cond_projector_0 = self.cond_projector_0.to(self.device)
+            self.cond_projector_1 = self.cond_projector_1.to(self.device)
         else:
             raise NotImplementedError
 
@@ -93,7 +100,6 @@ class ConditionalGenerator(nn.Module):
     """
     def forward(self, batch, is_train):
         x, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)
-        breakpoint()
         if attrs_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
             if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
@@ -108,12 +114,15 @@ class ConditionalGenerator(nn.Module):
             if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
+            if "aireadi" in self.cond_configs["cond_modal"]:
+                attr_emb = self.cond_projector_0(attr_emb_raw)
+                attr_emb = self.cond_projector_1(attr_emb, t)
+
             if "multimodal" in self.cond_configs["cond_modal"]:
                 attr_emb = self.cond_projector(attr_emb_raw)  # for now we are not using projector.
 
             print(f"attr_emb.shape = {attr_emb.shape}")
             print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
-            breakpoint()
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
             return loss
         

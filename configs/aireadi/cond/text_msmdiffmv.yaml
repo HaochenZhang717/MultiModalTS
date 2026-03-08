@@ -1,0 +1,33 @@
+device: cuda:0
+cond_modal: text
+generator_pretrain_path: ""
+
+#text:
+#  text_projector: var_scale_diffstep_multi
+#  num_stages: 3
+#
+#  # cliptextmodel
+#  pretrain_model_path: /playpen/haochenz/long_clip
+#  pretrain_model_dim: 768
+#  textemb_hidden_dim: 512
+#  text_emb: 64
+#  output_type: all
+#
+#  # transformer encoder
+#  tokenizer_path: /playpen/haochenz/long_clip
+#  word_size: 49408
+#  text_emb: 64
+
+#multimodal:
+#  model_id: Qwen/Qwen3-VL-Embedding-2B
+#  pretrain_model_dim: 2048
+#  vl_emb_hidden_dim: 512
+#  vl_emb: 64
+
+aireadi:
+  text_projector: var_scale_diffstep_multi
+  num_stages: 3
+  text_emb: 64
+  pretrain_model_dim: 2048
+  vl_emb_hidden_dim: 512
+  vl_emb: 64

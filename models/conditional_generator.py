@@ -152,7 +152,11 @@ class ConditionalGenerator(nn.Module):
             for datum in batch["retinal_images"]:
                 attrs.append({"retinal_images": datum})
 
-            raise NotImplementedError
+            attrs_embed = None
+            if "precomputed_embeds" in batch:
+                attrs_embed = batch["precomputed_embeds"].to(self.device).float()
+
+            return ts, tp, attrs, attrs_embed
 
         else:
 

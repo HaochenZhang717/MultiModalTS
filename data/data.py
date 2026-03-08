@@ -153,7 +153,8 @@ def aireadi_collate_fn(batch):
     out["glucose_window"] = torch.as_tensor(
         np.stack([b["glucose_window"] for b in batch], axis=0),
         dtype=torch.float32,
-    )
+    ).unsqueeze(1)
+
 
 
     if "retinal_images" in batch[0]:
@@ -549,9 +550,9 @@ class AIREADISplit(Dataset):
         sample = {
             "glucose_window": window,
             "time_local": time_local,
-            # "patient_id": int(pid) if str(pid).isdigit() else pid,
-            # "age": age,
-            # "study_group": study_group,
+            "patient_id": int(pid) if str(pid).isdigit() else pid,
+            "age": age,
+            "study_group": study_group,
             "text_description": f"This patient is {age} years old, their status is {study_group}",
             "retinal_images": self.retinal_cache[pid],
         }

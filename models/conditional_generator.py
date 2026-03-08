@@ -113,6 +113,7 @@ class ConditionalGenerator(nn.Module):
 
             print(f"attr_emb.shape = {attr_emb.shape}")
             print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
+            breakpoint()
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
             return loss
         

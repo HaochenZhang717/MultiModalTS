@@ -175,7 +175,6 @@ def run_precompute():
         text_embed = get_text_embedding(model, text)
         retinal_embed = get_retinal_embedding(model, retinal_images)
 
-        breakpoint()
 
         text_embeddings[pid] = text_embed
         retinal_embeddings[pid] = retinal_embed

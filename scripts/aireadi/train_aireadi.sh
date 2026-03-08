@@ -13,7 +13,7 @@ python run.py \
     --multipatch_num 3 \
     --L_patch_len 3 \
     --base_patch 4 \
-    --epochs 700 \
+    --epochs 2 \
     --batch_size 512 \
     --clip_cache_path ""
 

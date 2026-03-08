@@ -91,6 +91,7 @@ class Trainer:
             for batch_no, train_batch in enumerate(self.train_loader):
                 self._global_batch_no += 1
                 self.opt.zero_grad()
+                breakpoint()
                 loss_dict = self.model(train_batch, is_train=True)
 
                 loss_dict["all"].backward()

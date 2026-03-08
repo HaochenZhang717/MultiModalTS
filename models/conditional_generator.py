@@ -13,7 +13,7 @@ import yaml
 class ConditionalGenerator(nn.Module):
     def __init__(self, diff_configs, cond_configs):
         super().__init__()
-        self.device = diff_configs["device"]
+        self.device = diff_configs["device"] if torch.cuda.is_available() else "cpu"
         self.diff_configs = diff_configs
         self.cond_configs = cond_configs
         self._init_condition_encoders(diff_configs, cond_configs)
@@ -52,7 +52,6 @@ class ConditionalGenerator(nn.Module):
 
 
             self.cond_projector = self.cond_projector.to(self.device)
-
         elif cond_configs["cond_modal"] == "multimodal":
             cond_configs["multimodal"]["device"] = self.device
             # self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
@@ -64,7 +63,16 @@ class ConditionalGenerator(nn.Module):
             )
             self.cond_projector = self.cond_projector.to(self.device)
 
-
+        elif cond_configs["cond_modal"] == "aireadi":
+            cond_configs["multimodal"]["device"] = self.device
+            # self.attr_en = MultiModalEncoder(cond_configs["multimodal"]).to(self.device)
+            self.cond_projector = nn.Sequential(
+                nn.Linear(cond_configs["multimodal"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.LayerNorm(cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Linear(cond_configs["multimodal"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"])
+            )
+            self.cond_projector = self.cond_projector.to(self.device)
 
         else:
             raise NotImplementedError
@@ -129,27 +137,47 @@ class ConditionalGenerator(nn.Module):
         return loss_dict
 
     def _unpack_data_cond_gen(self, batch):
+        if "aireadi" in self.cond_configs["cond_modal"]:
+            ts = batch["glucose_window"].to(self.device).float()
+            B, _, T = ts.shape
+            tp = torch.arange(T).repeat(B,1).to(self.device).float()
+            breakpoint()
 
-        ts = batch["ts"].to(self.device).float()
-        tp = batch["tp"].to(self.device).float()
-        if "text" in self.cond_configs["cond_modal"]:
-            attrs = batch["cap"]
-        elif "constraint" in self.cond_configs["cond_modal"]:
-            attrs = batch["cap"]
-        elif self.cond_configs["cond_modal"] == "attr":
-            attrs = batch["attrs"].to(self.device).long()
-        elif "multimodal" in self.cond_configs["cond_modal"]:
             attrs = []
-            for datum in batch["cap"]:
-                attrs.append({"text": str(datum[0])})
-        else:
-            raise NotImplementedError
-        ts = ts.permute(0, 2, 1)
+            # text description of patient includes age and study group
+            for datum in batch["text_description"]:
+                attrs.append({"text": str(datum)})
+            # retinal photography of patient includes four retinal images
+            breakpoint()
+            for datum in batch["retinal_images"]:
+                attrs.append({"retinal_images": datum})
 
-        attrs_embed = None
-        if "cap_embed" in batch.keys():
-            attrs_embed = batch["cap_embed"].to(self.device).float()
-        return ts, tp, attrs, attrs_embed
+            raise NotImplementedError
+
+        else:
+
+            ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
+            tp = batch["tp"].to(self.device).float()
+            if "text" in self.cond_configs["cond_modal"]:
+                attrs = batch["cap"]
+            elif "constraint" in self.cond_configs["cond_modal"]:
+                attrs = batch["cap"]
+            elif self.cond_configs["cond_modal"] == "attr":
+                attrs = batch["attrs"].to(self.device).long()
+            elif "multimodal" in self.cond_configs["cond_modal"]:
+                attrs = []
+                for datum in batch["cap"]:
+                    attrs.append({"text": str(datum)})
+            else:
+                raise NotImplementedError
+            ts = ts.permute(0, 2, 1)
+
+            attrs_embed = None
+            if "cap_embed" in batch.keys():
+                attrs_embed = batch["cap_embed"].to(self.device).float()
+
+            breakpoint()
+            return ts, tp, attrs, attrs_embed
 
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":

@@ -23,14 +23,14 @@ def save_configs(configs, path):
 
 def train(training_stage, train_configs, model_diff_configs, model_cond_configs, eval_configs,  output_folder):
     train_configs["train"]["output_folder"] = output_folder
-
     dataset = GenerationDataset(train_configs["data"])
 
     if training_stage == "pretrain":
         model = UnConditionalGenerator(model_diff_configs)
     elif training_stage == "finetune":
         if "attrs" in model_cond_configs.keys():
-            model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
+            raise NotImplementedError
+            # model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
         model = ConditionalGenerator(model_diff_configs, model_cond_configs)
 
     print("\n***** Train Configs *****")

@@ -270,7 +270,7 @@ class VerbalTS(nn.Module):
             attr_emb = torch.zeros_like(x_in)
         else:
             breakpoint()
-            if "text_projector" in self.config:
+            if "text_projector" in self.config or "aireadi_projector" in self.config:
                 if "scale" in self.config["text_projector"]:
                     assert len(scale_length) == attr_emb_raw.shape[2]
                     mscale_attr_list = []

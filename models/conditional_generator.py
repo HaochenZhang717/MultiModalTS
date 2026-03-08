@@ -110,9 +110,8 @@ class ConditionalGenerator(nn.Module):
             if "multimodal" in self.cond_configs["cond_modal"]:
                 attr_emb = self.cond_projector(attr_emb_raw)  # for now we are not using projector.
 
-            # print(f"attr_emb.shape = {attr_emb.shape}")
-            # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
-            # breakpoint()
+            print(f"attr_emb.shape = {attr_emb.shape}")
+            print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
             return loss
         
@@ -141,16 +140,16 @@ class ConditionalGenerator(nn.Module):
             ts = batch["glucose_window"].to(self.device).float()
             B, _, T = ts.shape
             tp = torch.arange(T).repeat(B,1).to(self.device).float()
-            breakpoint()
 
             attrs = []
             # text description of patient includes age and study group
-            for datum in batch["text_description"]:
-                attrs.append({"text": str(datum)})
+            if "text_description" in batch:
+                for datum in batch["text_description"]:
+                    attrs.append({"text": str(datum)})
             # retinal photography of patient includes four retinal images
-            breakpoint()
-            for datum in batch["retinal_images"]:
-                attrs.append({"retinal_images": datum})
+            if "retinal_images" in batch:
+                for datum in batch["retinal_images"]:
+                    attrs.append({"retinal_images": datum})
 
             attrs_embed = None
             if "precomputed_embeds" in batch:
@@ -180,7 +179,6 @@ class ConditionalGenerator(nn.Module):
             if "cap_embed" in batch.keys():
                 attrs_embed = batch["cap_embed"].to(self.device).float()
 
-            breakpoint()
             return ts, tp, attrs, attrs_embed
 
     def generate(self, batch, n_samples, sampler="ddim"):

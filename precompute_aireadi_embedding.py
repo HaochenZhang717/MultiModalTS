@@ -13,7 +13,7 @@ from models.encoders.qwen3_vl_embedding import Qwen3VLEmbedder
 # PATH CONFIG
 # ==========================
 
-DATA_ROOT = "/playpen/haochenz/AI-READI"
+DATA_ROOT = "/playpen-shared/haochenz/AI-READI"
 # DATA_ROOT = "/Users/zhc/Documents/AI-READI"
 
 RETINAL_ROOT = os.path.join(
@@ -210,3 +210,4 @@ def run_precompute():
 
 if __name__ == "__main__":
     run_precompute()
+    # # scp -r /Users/zhc/Documents/AI-READI/participants.tsv haochenz@unites1.cs.unc.edu:/playpen/haochenz/AI-READI

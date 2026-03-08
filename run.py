@@ -172,10 +172,17 @@ eval_configs["eval"]["batch_size"] = args.batch_size
 model_diff_configs["diffusion"]["multipatch_num"] = args.multipatch_num
 model_diff_configs["diffusion"]["L_patch_len"] = args.L_patch_len
 model_diff_configs["diffusion"]["base_patch"] = args.base_patch
+
 if "text" in args.model_cond_config_path and args.training_stage == "finetune":
-    model_cond_configs["text"]["output_type"] = args.text_output_type
-    model_cond_configs["text"]["num_stages"] = args.diff_stage_num
-    model_cond_configs["text"]["pos_emb"] = args.text_pos_emb
+    if "text" in model_cond_configs:
+        model_cond_configs["text"]["output_type"] = args.text_output_type
+        model_cond_configs["text"]["num_stages"] = args.diff_stage_num
+        model_cond_configs["text"]["pos_emb"] = args.text_pos_emb
+    elif "aireadi" in model_cond_configs:
+        model_cond_configs["aireadi"]["output_type"] = args.text_output_type
+        model_cond_configs["aireadi"]["num_stages"] = args.diff_stage_num
+        model_cond_configs["aireadi"]["pos_emb"] = args.text_pos_emb
+
 
 if args.clip_folder != "":
     eval_configs["eval"]["cache_folder"] = args.clip_cache_path

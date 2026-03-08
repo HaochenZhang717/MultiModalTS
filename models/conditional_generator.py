@@ -65,10 +65,10 @@ class ConditionalGenerator(nn.Module):
         elif cond_configs["cond_modal"] == "aireadi":
             cond_configs["aireadi"]["device"] = self.device
             self.cond_projector_0 = nn.Sequential(
-                nn.Linear(cond_configs["aireadi"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.Linear(cond_configs["aireadi"]["pretrain_model_dim"], cond_configs["aireadi"]["vl_emb_hidden_dim"]),
                 nn.LayerNorm(cond_configs["aireadi"]["vl_emb_hidden_dim"]),
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Linear(cond_configs["aireadi"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"]),
+                nn.Linear(cond_configs["aireadi"]["vl_emb_hidden_dim"], cond_configs["aireadi"]["vl_emb"]),
             )
 
             self.cond_projector_1 = TextProjectorMVarMScaleMStep(

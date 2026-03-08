@@ -4,10 +4,10 @@ python run.py \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
     --save_folder ../save/aireadi/retinal_and_text \
-    --model_diff_config_path configs/aireadi_debug/diff/model_text2ts_dep.yaml \
-    --model_cond_config_path configs/aireadi_debug/cond/text_msmdiffmv.yaml \
-    --train_config_path configs/aireadi_debug/train.yaml \
-    --evaluate_config_path configs/aireadi_debug/evaluate.yaml \
+    --model_diff_config_path configs/aireadi/diff/model_text2ts_dep.yaml \
+    --model_cond_config_path configs/aireadi/cond/text_msmdiffmv.yaml \
+    --train_config_path configs/aireadi/train.yaml \
+    --evaluate_config_path configs/aireadi/evaluate.yaml \
     --data_folder "none" \
     --clip_folder "" \
     --multipatch_num 3 \

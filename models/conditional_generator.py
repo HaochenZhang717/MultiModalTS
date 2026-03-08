@@ -86,8 +86,10 @@ class ConditionalGenerator(nn.Module):
 
     def _init_diff(self, configs):
         configs["device"] = self.device
+        breakpoint()
         if "text" in self.cond_configs["cond_modal"]:
             configs["diffusion"]["text_projector"] = self.cond_configs["text"]["text_projector"]
+        breakpoint()
         self.generator = UnConditionalGenerator(configs=configs)
         if configs["generator_pretrain_path"] != "":
             self.generator.load_state_dict(torch.load(configs["generator_pretrain_path"]))

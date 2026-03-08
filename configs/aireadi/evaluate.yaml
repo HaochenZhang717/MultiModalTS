@@ -2,6 +2,7 @@
 data:
   name: ai_readi
   data_path: /playpen-shared/haochenz/AI-READI
+  folder: /playpen-shared/haochenz/AI-READI
   window_size: 128
   retinal_resize: [256, 337]
 

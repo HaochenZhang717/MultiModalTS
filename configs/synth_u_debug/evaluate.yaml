@@ -1,7 +1,7 @@
 ### Dataset ###
 data:
   name: custom
-  folder: /Users/zhc/Documents/PhD/projects/TimeSeriesUnifiedModel/VerbalTSDatasets/synthetic_u
+  folder: /Users/zhc/Documents/LitsDatasets/128_len_ts/synthetic_u
 
 ### Evaluate ###
 eval:

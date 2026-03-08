@@ -8,7 +8,7 @@ python run.py \
     --model_cond_config_path configs/synth_u_debug/cond/text_msmdiffmv.yaml \
     --train_config_path configs/synth_u_debug/train.yaml \
     --evaluate_config_path configs/synth_u_debug/evaluate.yaml \
-    --data_folder /Users/zhc/Documents/PhD/projects/TimeSeriesUnifiedModel/VerbalTSDatasets/synthetic_u \
+    --data_folder /Users/zhc/Documents/LitsDatasets/128_len_ts/synthetic_u \
     --clip_folder "" \
     --multipatch_num 3 \
     --L_patch_len 3 \

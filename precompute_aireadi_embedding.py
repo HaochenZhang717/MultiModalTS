@@ -210,3 +210,6 @@ def run_precompute():
 if __name__ == "__main__":
     run_precompute()
     # # scp -r /Users/zhc/Documents/AI-READI/participants.tsv haochenz@unites1.cs.unc.edu:/playpen/haochenz/AI-READI
+    # scp -r haochenz@unites4.cs.unc.edu:/playpen-shared/haochenz/AI-READI/patient_ids.pt /Users/zhc/Documents/AI-READI/
+    # scp -r haochenz@unites4.cs.unc.edu:/playpen-shared/haochenz/AI-READI/retinal_embeddings.pt /Users/zhc/Documents/AI-READI/
+    # scp -r haochenz@unites4.cs.unc.edu:/playpen-shared/haochenz/AI-READI/text_embeddings.pt /Users/zhc/Documents/AI-READI/

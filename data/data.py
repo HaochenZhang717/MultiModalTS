@@ -157,11 +157,11 @@ def aireadi_collate_fn(batch):
 
 
 
-    if "retinal_images" in batch[0]:
-        # input: (B, 4, H, W, 3) uint8
-        retinal = np.stack([b["retinal_images"] for b in batch], axis=0)
-        retinal = torch.from_numpy(retinal).permute(0, 1, 4, 2, 3).float() / 255.0
-        out["retinal_images"] = retinal
+    # if "retinal_images" in batch[0]:
+    #     # input: (B, 4, H, W, 3) uint8
+    #     retinal = np.stack([b["retinal_images"] for b in batch], axis=0)
+    #     retinal = torch.from_numpy(retinal).permute(0, 1, 4, 2, 3).float() / 255.0
+    #     out["retinal_images"] = retinal
 
     out["age"] = torch.as_tensor(
         [b["age"] for b in batch],
@@ -172,6 +172,8 @@ def aireadi_collate_fn(batch):
     out["study_group"] = [b["study_group"] for b in batch]
     out["text_description"] = [b["text_description"] for b in batch]
     out["time_local"] = [b["time_local"] for b in batch]
+    out["retinal_embedding"] = torch.stack([b["retinal_embedding"] for b in batch])
+    out["text_embedding"] = torch.stack([b["text_embedding"] for b in batch])
 
     return out
 
@@ -226,8 +228,12 @@ class CustomSplit(Dataset):
             caps_embed_path = os.path.join(
                 self.folder, self.split + "_text_my_caps_v2_embeds.pt"
             )
+            # caps_embed_path = os.path.join(
+            #     self.folder, self.split + "_text_my_caps_v2_embeds.npy"
+            # )
             if os.path.exists(caps_embed_path):
                 caps_embed = torch.load(caps_embed_path, map_location="cpu")
+                # caps_embed = torch.from_numpy(np.load(caps_embed_path))
                 self.caps_embed = caps_embed
                 print("using precomputed caps embedding.")
 
@@ -343,11 +349,35 @@ class AIREADISplit(Dataset):
         self.collate_fn = aireadi_collate_fn
 
         self.load_meta_data()
+        self.load_precomputed_embeds()
         self.load_glucose()
-        self.cache_retinal_images()
+        # self.cache_retinal_images()
         self.build_windows()
 
         print(f"Split: {self.split}, total samples {len(self.windows)}.")
+
+
+    def load_precomputed_embeds(self):
+
+        text_path = os.path.join(self.data_path, "text_embeddings.pt")
+        retinal_path = os.path.join(self.data_path, "retinal_embeddings.pt")
+        patient_ids_path = os.path.join(self.data_path, "patient_ids.pt")
+
+        if not os.path.exists(text_path):
+            raise FileNotFoundError(text_path)
+
+        if not os.path.exists(retinal_path):
+            raise FileNotFoundError(retinal_path)
+
+        print(f"[AI-READI:{self.split}] Loading precomputed embeddings")
+
+        self.text_embeddings = torch.load(text_path)
+        self.retinal_embeddings = torch.load(retinal_path)
+        self.embed_patient_ids = set(torch.load(patient_ids_path))
+
+        print("text embeddings:", len(self.text_embeddings))
+        print("retinal embeddings:", len(self.retinal_embeddings))
+
 
     def load_meta_data(self):
         if not os.path.exists(self.metadata_path):
@@ -357,6 +387,7 @@ class AIREADISplit(Dataset):
         meta["person_id"] = meta["person_id"].astype(str)
         self.meta_df = meta
         self.meta_dict = meta.set_index("person_id").to_dict("index")
+
 
     def load_glucose(self):
         parquet_path = os.path.join(self.data_path, f"{self.glucose_prefix}_{self.split}.parquet")
@@ -379,6 +410,8 @@ class AIREADISplit(Dataset):
             if os.path.isdir(os.path.join(self.retinal_root, f))
         }
         df = df[df["patient_id"].isin(valid_ids)]
+
+        df = df[df["patient_id"].isin(self.embed_patient_ids)]
 
         # Keep only patients that also exist in participants.tsv
         df = df[df["patient_id"].isin(set(self.meta_dict.keys()))]
@@ -501,7 +534,8 @@ class AIREADISplit(Dataset):
         self.patient_series = {}
 
         for pid, g in self.patient_groups.items():
-            if pid not in self.retinal_cache:
+            # if pid not in self.retinal_cache:
+            if pid not in self.retinal_embeddings:
                 continue
             if pid not in self.meta_dict:
                 continue
@@ -554,11 +588,9 @@ class AIREADISplit(Dataset):
             "age": age,
             "study_group": study_group,
             "text_description": f"This patient is {age} years old, their status is {study_group}",
-            "retinal_images": self.retinal_cache[pid],
+            "retinal_embedding": self.retinal_embeddings[pid],  # (4, D)
+            "text_embedding": self.text_embeddings[pid],  # (1, D)
         }
-
-
-
         return sample
 
 

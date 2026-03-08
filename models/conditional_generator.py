@@ -93,6 +93,7 @@ class ConditionalGenerator(nn.Module):
     """
     def forward(self, batch, is_train):
         x, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)
+        breakpoint()
         if attrs_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
             if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
@@ -152,9 +153,10 @@ class ConditionalGenerator(nn.Module):
                     attrs.append({"retinal_images": datum})
 
             attrs_embed = None
-            if "precomputed_embeds" in batch:
-                attrs_embed = batch["precomputed_embeds"].to(self.device).float()
-
+            if "retinal_embedding" in batch:
+                assert "text_embedding" in batch
+                attrs_embed = torch.cat((batch["retinal_embedding"], batch["text_embedding"]), dim=1).to(self.device).float()
+                # attrs_embed = batch["precomputed_embeds"].to(self.device).float()
             return ts, tp, attrs, attrs_embed
 
         else:

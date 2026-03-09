@@ -218,13 +218,13 @@ class ConditionalGenerator(nn.Module):
         ts, tp, attrs, attr_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
         if attr_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
+            if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
+                attr_emb = self.cond_projector(attr_emb_raw)
         else:
             attr_emb_raw = attr_embed_batch
-        if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
-            attr_emb = self.cond_projector(attr_emb_raw)
 
-        if "multimodal" in self.cond_configs["cond_modal"]:
-            attr_emb = self.cond_projector(attr_emb_raw)
+        # if "multimodal" in self.cond_configs["cond_modal"]:
+        #     attr_emb = self.cond_projector(attr_emb_raw)
 
         samples = []
         B = ts.shape[0]

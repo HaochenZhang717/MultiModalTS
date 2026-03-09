@@ -25,9 +25,12 @@ class UnConditionalGenerator(nn.Module):
         self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
         self.ddim = DDIMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
     
-    def _noise_estimation_loss(self, x, tp, attr_emb, t):        
+    def _noise_estimation_loss(self, x, tp, attr_emb, t, loss_mask):
         noise = torch.randn_like(x)
+        breakpoint()
         noisy_x = self.ddpm.forward(x, t, noise)
+        if loss_mask is not None:
+            noisy_x = noisy_x * loss_mask + x * (1 - loss_mask) # add noise to the precition area only
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)
         residual = noise - pred_noise
         loss_dict["noise_loss"] = (residual ** 2).mean()

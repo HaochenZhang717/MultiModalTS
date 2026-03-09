@@ -174,6 +174,7 @@ def aireadi_collate_fn(batch):
     out["time_local"] = [b["time_local"] for b in batch]
     out["retinal_embedding"] = torch.stack([b["retinal_embedding"] for b in batch])
     out["text_embedding"] = torch.stack([b["text_embedding"] for b in batch])
+    out["loss_mask"] = torch.stack([b["loss_mask"] for b in batch])
 
     return out
 
@@ -276,6 +277,7 @@ class AIREADIDataset:
         folder=None,
         data_path=None,
         window_size=24,
+        predict_size=1,
         retinal_resize=(256, 256),
         metadata_path=None,
         retinal_root=None,
@@ -289,6 +291,7 @@ class AIREADIDataset:
             raise ValueError("AIREADIDataset requires either `data_path` or `folder`.")
 
         self.window_size = int(window_size)
+        self.predict_size = int(predict_size)
         self.retinal_resize = retinal_resize
         self.metadata_path = (
             metadata_path
@@ -311,6 +314,7 @@ class AIREADIDataset:
             data_path=self.data_path,
             split=split,
             window_size=self.window_size,
+            predict_size=self.predict_size,
             retinal_resize=self.retinal_resize,
             metadata_path=self.metadata_path,
             retinal_root=self.retinal_root,
@@ -326,6 +330,7 @@ class AIREADISplit(Dataset):
         data_path,
         split="train",
         window_size=24,
+        predict_size=1,
         retinal_resize=(256, 256),
         metadata_path=None,
         retinal_root=None,
@@ -339,6 +344,7 @@ class AIREADISplit(Dataset):
         self.data_path = data_path
         self.split = split
         self.window_size = int(window_size)
+        self.predict_size = int(predict_size)
         self.retinal_resize = retinal_resize
         self.metadata_path = metadata_path
         self.retinal_root = retinal_root
@@ -581,8 +587,11 @@ class AIREADISplit(Dataset):
         age = int(meta["age"]) if not pd.isna(meta["age"]) else -1
         study_group = str(meta["study_group"]) if not pd.isna(meta["study_group"]) else "unknown"
 
+        loss_mask = torch.zeros(len(window))
+        loss_mask[-self.predict_size:] = 1
         sample = {
             "glucose_window": window,
+            "loss_mask": loss_mask,
             "time_local": time_local,
             "patient_id": int(pid) if str(pid).isdigit() else pid,
             "age": age,

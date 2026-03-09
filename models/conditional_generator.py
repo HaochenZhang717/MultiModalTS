@@ -104,7 +104,7 @@ class ConditionalGenerator(nn.Module):
     Finetune.
     """
     def forward(self, batch, is_train):
-        x, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)
+        x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
         if attrs_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
             if self.cond_configs["cond_modal"] == "attr" or "diffstep" not in self.cond_configs["text"]["text_projector"]:
@@ -128,7 +128,7 @@ class ConditionalGenerator(nn.Module):
 
             # print(f"attr_emb.shape = {attr_emb.shape}")
             # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
-            loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t)
+            loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t, loss_mask)
             return loss
         
         loss_dict = {}
@@ -153,6 +153,7 @@ class ConditionalGenerator(nn.Module):
 
     def _unpack_data_cond_gen(self, batch):
         if "aireadi" in self.cond_configs["cond_modal"]:
+            loss_mask = batch["loss_mask"].to(self.device).float()
             ts = batch["glucose_window"].to(self.device).float()
             B, _, T = ts.shape
             tp = torch.arange(T).repeat(B,1).to(self.device).float()
@@ -172,10 +173,10 @@ class ConditionalGenerator(nn.Module):
                 assert "text_embedding" in batch
                 attrs_embed = torch.cat((batch["retinal_embedding"], batch["text_embedding"]), dim=1).to(self.device).float()
                 # attrs_embed = batch["precomputed_embeds"].to(self.device).float()
-            return ts, tp, attrs, attrs_embed
+            return ts, tp, attrs, attrs_embed, loss_mask
 
         else:
-
+            loss_mask = None
             ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
             tp = batch["tp"].to(self.device).float()
             if "text" in self.cond_configs["cond_modal"]:
@@ -196,7 +197,7 @@ class ConditionalGenerator(nn.Module):
             if "cap_embed" in batch.keys():
                 attrs_embed = batch["cap_embed"].to(self.device).float()
 
-            return ts, tp, attrs, attrs_embed
+            return ts, tp, attrs, attrs_embed, loss_mask
 
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":
@@ -210,7 +211,7 @@ class ConditionalGenerator(nn.Module):
     """
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, attrs, attr_embed_batch = self._unpack_data_cond_gen(batch)
+        ts, tp, attrs, attr_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
         if attr_embed_batch is None:
             attr_emb_raw = self.attr_en(attrs)
         else:
@@ -248,7 +249,7 @@ class ConditionalGenerator(nn.Module):
         return torch.stack(samples)
     
     def generate_constraint(self, batch, n_samples, sampler="ddim"):
-        ts, tp, attrs, attrs_embed_batch = self._unpack_data_cond_gen(batch)#todo: need to change maybe
+        ts, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)#todo: need to change maybe
         samples = []
         B = ts.shape[0]
         for i in range(n_samples):

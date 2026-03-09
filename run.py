@@ -23,6 +23,7 @@ def save_configs(configs, path):
 
 def train(training_stage, train_configs, model_diff_configs, model_cond_configs, eval_configs,  output_folder):
     train_configs["train"]["output_folder"] = output_folder
+    breakpoint()
     dataset = GenerationDataset(train_configs["data"])
 
     if training_stage == "pretrain":

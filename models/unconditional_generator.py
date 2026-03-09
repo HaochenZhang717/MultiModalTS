@@ -37,9 +37,9 @@ class UnConditionalGenerator(nn.Module):
         if loss_mask is None: # when we just do generation
             loss_dict["noise_loss"] = (residual ** 2).mean()
         else: # when we are doing prediction or imputation
-            loss_dict["noise_loss"] = (residual ** 2).mean()
+            mask = loss_mask.unsqueeze(1)  # (B,1,T)
+            loss_dict["noise_loss"] = ((residual ** 2) * mask).sum() / mask.sum()
 
-        breakpoint()
         all_loss = torch.zeros_like(loss_dict["noise_loss"])
         for k in loss_dict.keys():
             all_loss += loss_dict[k]

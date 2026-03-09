@@ -2,8 +2,8 @@
 data:
   name: ai_readi
   data_path: /playpen-shared/haochenz/AI-READI
-  window_size: 128
-  predict_size: 64
+  window_size: 1024
+  predict_size: 512
   retinal_resize: [256, 337]
 
 

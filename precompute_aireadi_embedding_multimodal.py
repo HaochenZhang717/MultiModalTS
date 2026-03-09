@@ -125,22 +125,15 @@ def get_patient_embedding(model, text, images):
     inputs = []
 
     # text first
-    inputs.append({"text": text})
+    text = text + "The four given images are left macula retinal photograph, right macula retinal photograph, left wide-field retinal photograph, and right wide-field retinal photograph."
 
-    # then all images
-    descriptions = [
-        "left macula retinal photograph",
-        "right macula retinal photograph",
-        "left wide-field retinal photograph",
-        "right wide-field retinal photograph",
-    ]
+    image_list = []
+    for img in zip(images):
+        image_list.append(img)
 
-    for img, desc in zip(images, descriptions):
-        inputs.append({
-            "text": desc,
-            "image": img
-        })
-
+    inputs.append(
+        {"text": text, "image": image_list}
+    )
 
 
     embeds = model.process(inputs)   # shape [num_modalities, D]

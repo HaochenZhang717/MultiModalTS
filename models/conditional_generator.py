@@ -140,6 +140,10 @@ class ConditionalGenerator(nn.Module):
             if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
                 attr_emb = self.cond_projector(attr_emb_raw, t)
 
+            if "aireadi" in self.cond_configs["cond_modal"]:
+                attr_emb = self.cond_projector_0(attr_emb_raw)
+                attr_emb = self.cond_projector_1(attr_emb, t)
+
             # print(f"attr_emb shape {attr_emb.shape}")
             tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, attr_emb, t, loss_mask)
             for k in tmp_loss_dict:

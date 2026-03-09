@@ -40,7 +40,7 @@ def load_model():
         torch_dtype=torch.float16,
     )
 
-    model.eval()
+    model
 
     return model
 

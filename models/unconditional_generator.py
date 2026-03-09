@@ -34,9 +34,9 @@ class UnConditionalGenerator(nn.Module):
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)
         residual = noise - pred_noise
 
-        if loss_mask is None:
+        if loss_mask is None: # when we just do generation
             loss_dict["noise_loss"] = (residual ** 2).mean()
-        else:
+        else: # when we are doing prediction or imputation
             loss_dict["noise_loss"] = (residual ** 2).mean()
 
         breakpoint()

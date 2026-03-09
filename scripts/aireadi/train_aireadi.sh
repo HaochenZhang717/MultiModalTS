@@ -14,7 +14,7 @@ python run.py \
     --L_patch_len 3 \
     --base_patch 4 \
     --epochs 700 \
-    --batch_size 512 \
+    --batch_size 256 \
     --clip_cache_path ""
 
 

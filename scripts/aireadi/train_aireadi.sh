@@ -1,4 +1,4 @@
-
+export CUDA_VISIBLE_DEVICES=5
 python run.py \
     --cond_modal aireadi \
     --text_type my_generated_text_embeds \

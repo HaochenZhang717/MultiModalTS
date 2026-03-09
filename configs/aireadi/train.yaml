@@ -10,8 +10,8 @@ data:
 ### Pretrain ###
 train:
   epochs: 200
-  batch_size: 256
-  lr: 1.0e-3
+  batch_size: 512
+  lr: 8.0e-4
   itr_per_epoch: 1.0e+8
   model_path: ""
   output_folder: pretrain

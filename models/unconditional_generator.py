@@ -28,7 +28,7 @@ class UnConditionalGenerator(nn.Module):
     def _noise_estimation_loss(self, x, tp, attr_emb, t, loss_mask):
         noise = torch.randn_like(x)
         noisy_x = self.ddpm.forward(x, t, noise)
-        breakpoint()
+
         if loss_mask is not None:
             noisy_x = noisy_x * loss_mask.unsqueeze(1) + x * (1 - loss_mask.unsqueeze(1)) # add noise to the precition area only
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)

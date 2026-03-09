@@ -561,8 +561,11 @@ class AIREADISplit(Dataset):
             if n_windows <= 0:
                 continue
 
-            for start_idx in range(n_windows):
+            for start_idx in range(0, n_windows, 100):
                 self.windows.append((pid, start_idx))
+
+            # for start_idx in range(n_windows):
+            #     self.windows.append((pid, start_idx))
 
         print(f"[AI-READI:{self.split}] total windows: {len(self.windows)}")
 

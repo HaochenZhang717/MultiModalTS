@@ -169,6 +169,7 @@ class BaseEvaluator:
                     sample_num += ts_gen_emb.shape[0]
 
                 # 🔵 新增：保存数据（移动到CPU避免显存爆炸）
+                breakpoint()
                 result_ts_dict["caption"].extend(batch["cap"])
                 result_ts_dict["real_ts"].append(batch["ts"].cpu())
                 result_ts_dict["sampled_ts"].append(multi_preds.cpu())

@@ -2,7 +2,8 @@
 data:
   name: ai_readi
   data_path: /Users/zhc/Documents/AI-READI
-  window_size: 128
+  window_size: 1024
+  predict_size: 512
   retinal_resize: [256, 337]
 
 

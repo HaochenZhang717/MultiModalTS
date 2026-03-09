@@ -25,7 +25,7 @@ generator_pretrain_path: ""
 #  vl_emb: 64
 
 aireadi:
-  text_projector: var_scale_diffstep_multi
+  aireadi_projector: var_scale_diffstep_multi
   num_stages: 3
   text_emb: 64
   pretrain_model_dim: 2048

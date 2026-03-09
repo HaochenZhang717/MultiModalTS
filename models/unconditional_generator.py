@@ -75,6 +75,7 @@ class UnConditionalGenerator(nn.Module):
         ts = batch["ts"].to(self.device).float()
         tp = batch["tp"].to(self.device).float()
         ts = ts.permute(0, 2, 1)
+
         return ts, tp
 
     """

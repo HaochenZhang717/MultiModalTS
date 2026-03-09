@@ -226,11 +226,17 @@ class ConditionalGenerator(nn.Module):
         if "multimodal" in self.cond_configs["cond_modal"]:
             attr_emb = self.cond_projector(attr_emb_raw)
 
-
         samples = []
         B = ts.shape[0]
+
+        if loss_mask is not None:
+            loss_mask = loss_mask.unsqueeze(1)  # (B,1,T)
+
+
         for i in range(n_samples):
             x = torch.randn_like(ts)
+            if loss_mask is not None:
+                x = x * loss_mask + ts * (1 - loss_mask)
 
             if "multimodal" in self.cond_configs["cond_modal"]:
                 attr_emb = self.cond_projector(attr_emb_raw)
@@ -241,14 +247,26 @@ class ConditionalGenerator(nn.Module):
                 if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
                     attr_emb = self.cond_projector(attr_emb_raw, t)
 
+                if "aireadi" in self.cond_configs["cond_modal"]:
+                    attr_emb = self.cond_projector_0(attr_emb_raw)
+                    attr_emb = self.cond_projector_1(attr_emb, t)
+
+
                 # print(f"attr_emb shape {attr_emb.shape}")
                 # print(f"attr_emb_raw shape {attr_emb_raw.shape}")
                 # breakpoint()
                 pred_noise, _ = self.generator.predict_noise(x, tp, attr_emb, t)
                 if sampler == "ddpm":
-                    x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+                    x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
                 else:
-                    x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+                    x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+
+                # clamp observed region
+                if loss_mask is not None:
+                    x = x_pred * loss_mask + ts * (1 - loss_mask)
+                else:
+                    x = x_pred
+
             samples.append(x)
         return torch.stack(samples)
     

@@ -170,7 +170,7 @@ def main():
     model = GRUPredictor(output_len=64).to(device)
 
     # 4. Run Loop
-    train(model, train_loader, val_loader, epochs=40)
+    train(model, train_loader, val_loader, epochs=100)
     visualize(model, val_ds)
 
 

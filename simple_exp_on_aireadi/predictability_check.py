@@ -106,11 +106,11 @@ def visualize(model, dataset, num_examples=3):
         indices = np.random.choice(len(dataset), num_examples, replace=False)
         for i in indices:
             sample = dataset[i]
-            prefix = sample["prefix"].unsqueeze(0).to(device)
+            prefix = torch.from_numpy(sample["prefix"]).unsqueeze(0).to(device)
             # 反缩放回真实血糖值 (400.0 是 Dataset 里的缩放系数)
-            target = sample["target"].cpu().numpy() * 400.0
-            pred = model(prefix).squeeze(0).cpu().numpy() * 400.0
-            prefix_np = sample["prefix"].cpu().numpy() * 400.0
+            target = sample["target"].cpu().numpy()
+            pred = model(prefix).squeeze(0).cpu().numpy()
+            prefix_np = prefix.cpu().numpy()
 
             plt.figure(figsize=(10, 4))
             plt.plot(range(64), prefix_np, label="History", color='blue')
@@ -142,7 +142,7 @@ def main():
     model = GRUPredictor().to(device)
 
     # 这里的 model 会在训练结束后自动变为最佳权重状态
-    model = train(model, train_loader, val_loader, epochs=500)
+    model = train(model, train_loader, val_loader, epochs=1)
 
     visualize(model, val_ds)
 

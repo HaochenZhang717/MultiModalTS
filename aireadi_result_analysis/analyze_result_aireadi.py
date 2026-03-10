@@ -66,7 +66,7 @@ def evaluate_prediction(results, save_dir=None, num_visualize=5):
 
         # predictions
         for s in range(S):
-            plt.plot(range(obs_len, T), preds[s, obs_len:], alpha=0.3)
+            plt.plot(range(obs_len, T), preds[s, obs_len:], alpha=0.3, color="red")
 
         plt.axvline(obs_len, linestyle="--", color="black")
 

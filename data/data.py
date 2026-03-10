@@ -606,3 +606,7 @@ class AIREADISplit(Dataset):
         return sample
 
 
+if __name__ == "__main__":
+    parquet_path = "/Users/zhc/Documents/AI-READI/glucose_train.parquet"
+    df = pd.read_parquet(parquet_path).copy()
+    data = df.iloc[0]['glucose']

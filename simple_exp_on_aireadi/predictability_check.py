@@ -3,25 +3,19 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader, random_split
+import copy  # 用于深度拷贝模型权重
 
-# Device configuration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # ============================
-# Dataset with Scaling
+# Dataset
 # ============================
-
 class GlucoseDataset(Dataset):
     def __init__(self, data_path, prefix_len=64, target_len=64):
-        # Load data: assuming shape (N, Total_Len, 1)
         data = np.load(data_path)
-
-        # Simple Min-Max Scaling (assuming glucose range ~40-400)
-        # It's better to scale based on the training set, but this is a quick fix
-        self.data = torch.tensor(data).float()
-        # print(self.data.max())
-        # print(self.data.min())
+        # 注意：这里务必保留缩放，否则模型很难收敛
+        self.data = torch.tensor(data).float() / 400.0
         self.prefix = self.data[:, :prefix_len, :]
         self.target = self.data[:, prefix_len:prefix_len + target_len, :]
 
@@ -29,74 +23,54 @@ class GlucoseDataset(Dataset):
         return len(self.prefix)
 
     def __getitem__(self, idx):
-        return {
-            "prefix": self.prefix[idx],
-            "target": self.target[idx]
-        }
+        return {"prefix": self.prefix[idx], "target": self.target[idx]}
 
 
 # ============================
-# Improved Model Architecture
+# Model
 # ============================
-
 class GRUPredictor(nn.Module):
     def __init__(self, input_dim=1, hidden_dim=128, output_len=64):
         super().__init__()
-        self.output_len = output_len
-
-        self.gru = nn.GRU(
-            input_size=input_dim,
-            hidden_size=hidden_dim,
-            num_layers=2,
-            batch_first=True,
-            dropout=0.1
-        )
-
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers=2, batch_first=True, dropout=0.1)
         self.head = nn.Sequential(
             nn.Linear(hidden_dim, 256),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(256, output_len)  # Map hidden state to the whole future window
+            nn.Linear(256, output_len)
         )
 
     def forward(self, x):
-        # x shape: [batch, seq_len, 1]
         _, h = self.gru(x)
-
-        # Take the hidden state of the last layer: [batch, hidden_dim]
         last_hidden = h[-1]
-
-        # Predict the full sequence: [batch, output_len]
         pred = self.head(last_hidden)
-
-        # Reshape to [batch, output_len, 1] to match dataset targets
         return pred.unsqueeze(-1)
 
 
 # ============================
-# Training Logic
+# Training Logic (带最佳权重保存)
 # ============================
-
-def train(model, train_loader, val_loader, epochs=50):
+def train(model, train_loader, val_loader, epochs=100):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn = nn.MSELoss()
 
+    best_val_loss = float('inf')
+    best_model_wts = copy.deepcopy(model.state_dict())  # 初始化最佳权重
+
     for epoch in range(epochs):
+        # --- 训练阶段 ---
         model.train()
         train_loss = 0
         for batch in train_loader:
-            x = batch["prefix"].to(device)
-            y = batch["target"].to(device)
-
+            x, y = batch["prefix"].to(device), batch["target"].to(device)
             pred = model(x)
             loss = loss_fn(pred, y)
-
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
 
-        # Validation phase
+        # --- 验证阶段 ---
         model.eval()
         val_loss = 0
         with torch.no_grad():
@@ -105,15 +79,28 @@ def train(model, train_loader, val_loader, epochs=50):
                 pred = model(x)
                 val_loss += loss_fn(pred, y).item()
 
-        if epoch % 5 == 0 or epoch == epochs - 1:
-            print(
-                f"Epoch {epoch:02d} | Train Loss: {train_loss / len(train_loader):.6f} | Val Loss: {val_loss / len(val_loader):.6f}")
+        avg_train_loss = train_loss / len(train_loader)
+        avg_val_loss = val_loss / len(val_loader)
+
+        # 检查是否为最佳模型
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            best_model_wts = copy.deepcopy(model.state_dict())
+            if epoch > 0:  # 避免初始打印
+                print(f"--> Epoch {epoch:02d}: New best Val Loss: {best_val_loss:.6f}")
+
+        if epoch % 10 == 0 or epoch == epochs - 1:
+            print(f"Epoch {epoch:02d} | Train: {avg_train_loss:.6f} | Val: {avg_val_loss:.6f}")
+
+    # 训练结束后，加载表现最好的权重
+    print(f"\nTraining complete. Loading best weights (Val Loss: {best_val_loss:.6f})")
+    model.load_state_dict(best_model_wts)
+    return model
 
 
 # ============================
 # Visualization
 # ============================
-
 def visualize(model, dataset, num_examples=3):
     model.eval()
     with torch.no_grad():
@@ -121,44 +108,31 @@ def visualize(model, dataset, num_examples=3):
         for i in indices:
             sample = dataset[i]
             prefix = sample["prefix"].unsqueeze(0).to(device)
-            target = sample["target"].cpu().numpy() * 400.0  # Unscale for plotting
-
-            pred = model(prefix).squeeze(0).cpu().numpy() * 400.0  # Unscale
-            prefix_np = sample["prefix"].cpu().numpy() * 400.0  # Unscale
+            # 反缩放回真实血糖值 (400.0 是 Dataset 里的缩放系数)
+            target = sample["target"].cpu().numpy() * 400.0
+            pred = model(prefix).squeeze(0).cpu().numpy() * 400.0
+            prefix_np = sample["prefix"].cpu().numpy() * 400.0
 
             plt.figure(figsize=(10, 4))
-            plt.plot(range(len(prefix_np)), prefix_np, label="Input (History)", color='blue')
-
-            # Target and Prediction start where history ends
-            time_axis = range(len(prefix_np), len(prefix_np) + len(target))
-            plt.plot(time_axis, target, label="True Future", color='green', linestyle='--')
-            plt.plot(time_axis, pred, label="Model Prediction", color='red')
-
-            plt.axvline(x=len(prefix_np) - 1, color='gray', linestyle=':')
+            plt.plot(range(64), prefix_np, label="History", color='blue')
+            plt.plot(range(64, 128), target, label="True Future", color='green', linestyle='--')
+            plt.plot(range(64, 128), pred, label="Best Model Prediction", color='red')
+            plt.axvline(x=63, color='gray', alpha=0.5)
             plt.legend()
-            plt.title(f"Glucose Prediction Example {i}")
+            plt.title(f"Best Weights Visualization - Sample {i}")
             plt.ylabel("Glucose (mg/dL)")
-            # plt.show()
-            plt.savefig(f"glucose_prediction_example_{i}.png")
+            plt.savefig(f"best_model_example_{i}.png")
+            plt.close()
 
 
 # ============================
 # Main
 # ============================
-
 def main():
-    # 1. Load Data
     data_path = "glucose_single_patient.npy"
-    # Create dummy data if file doesn't exist for testing purposes
-    try:
-        full_dataset = GlucoseDataset(data_path)
-    except FileNotFoundError:
-        print("Data file not found. Creating dummy data...")
-        dummy_data = np.random.randn(100, 128, 1) * 20 + 120
-        np.save(data_path, dummy_data)
-        full_dataset = GlucoseDataset(data_path)
 
-    # 2. Split into Train/Val
+    full_dataset = GlucoseDataset(data_path, prefix_len=192, target_len=64)
+
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
     train_ds, val_ds = random_split(full_dataset, [train_size, val_size])
@@ -166,11 +140,11 @@ def main():
     train_loader = DataLoader(train_ds, batch_size=32, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=32)
 
-    # 3. Init Model
-    model = GRUPredictor(output_len=64).to(device)
+    model = GRUPredictor().to(device)
 
-    # 4. Run Loop
-    train(model, train_loader, val_loader, epochs=100)
+    # 这里的 model 会在训练结束后自动变为最佳权重状态
+    model = train(model, train_loader, val_loader, epochs=500)
+
     visualize(model, val_ds)
 
 

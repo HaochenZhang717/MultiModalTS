@@ -14,8 +14,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class GlucoseDataset(Dataset):
     def __init__(self, data_path, prefix_len=64, target_len=64):
         data = np.load(data_path)
-        # 注意：这里务必保留缩放，否则模型很难收敛
-        self.data = torch.tensor(data).float() / 400.0
+        self.data = data
         self.prefix = self.data[:, :prefix_len, :]
         self.target = self.data[:, prefix_len:prefix_len + target_len, :]
 

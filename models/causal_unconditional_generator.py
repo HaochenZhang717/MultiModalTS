@@ -17,7 +17,7 @@ class CausalUnConditionalGenerator(nn.Module):
 
     def _init_diff(self, configs):
         configs["device"] = self.device
-        self.diff_model = VerbalTS(configs, input_dim=1).to(self.device)
+        self.diff_model = VerbalTS(configs, inputdim=1).to(self.device)
 
         # self.diff_model = DiTModel(configs).to(self.device)
         self.num_steps = configs["num_steps"]

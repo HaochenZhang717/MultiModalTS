@@ -94,6 +94,7 @@ def downsample_attn_mask(attn_mask, L_patch_len):
     patch_mask = attn_mask.unfold(dimension=1, size=L_patch_len, step=L_patch_len)
     # shape: (B, N_patch, L_patch_len)
     # patch 内只要有一个 token 有效 → patch 有效
+    breakpoint()
     patch_mask = patch_mask.max(dim=-1).values
     return patch_mask
 
@@ -290,9 +291,8 @@ class CausalVerbalTS(nn.Module):
             attn_mask_list.append(downsample_attn_mask(attn_mask, self.config["base_patch"]*self.config["L_patch_len"]**i))
             print(f"{i}-th elemebt in x_list: {x.shape}")
             print(f"{i}-th elemebt in side_list: {side_emb.shape}")
-            print(f"{i}-th elemebt in attn_mask: {attn_mask_list[-1]}")
+            print(f"{i}-th elemebt in attn_mask: {attn_mask_list[-1].shape}")
 
-        breakpoint()
         # if self.attention_mask_type == "full" or attr_emb_raw is None:
         #     attention_mask = None
         # elif self.attention_mask_type == "parallel":
@@ -300,8 +300,10 @@ class CausalVerbalTS(nn.Module):
         
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
+        patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
         print(f"x_in: {x_in.shape}")
         print(f"side_in: {side_in.shape}")
+        print(f"patch_attn_mask: {patch_attn_mask.shape}")
         breakpoint()
 
 

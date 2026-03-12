@@ -77,7 +77,6 @@ class CausalConditionalGenerator(nn.Module):
         loss_mask = batch["loss_mask"].to(self.device).float()
         text_embed = batch["text_embedding"].to(self.device).float()
         attn_mask = batch["attn_mask"].to(self.device).float()
-        breakpoint()
         return ts, tp, text_embed, loss_mask, attn_mask
 
     def generate(self, batch, n_samples, sampler="ddim"):

@@ -272,7 +272,7 @@ class CausalVerbalTS(nn.Module):
         side_in = torch.cat(side_list, dim=-1)
         print(f"x_in: {x_in.shape}")
         print(f"side_in: {side_in.shape}")
-        breakpoint()
+        # breakpoint()
         if attr_emb_raw is None:
             attr_emb = torch.zeros_like(x_in)
         else:

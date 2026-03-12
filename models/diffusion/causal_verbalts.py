@@ -255,9 +255,9 @@ class ResidualBlock(nn.Module):
             return y
         y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L) # aggregate all time_vars
         y = y.permute(0, 2, 1)
-        if attention_mask is not None:
-            attention_mask = (1 - attention_mask) * float("-inf")
-            attention_mask = attention_mask.repeat_interleave(8, dim=0)
+        # if attention_mask is not None:
+        #     attention_mask = (1 - attention_mask) * float("-inf")
+        #     attention_mask = attention_mask.repeat_interleave(8, dim=0)
         y = self.time_layer(y, mask=attention_mask).permute(0, 2, 1)
         y = y.reshape(B, K, channel, L).permute(0, 2, 1, 3).reshape(B, channel, K * L)
         return y

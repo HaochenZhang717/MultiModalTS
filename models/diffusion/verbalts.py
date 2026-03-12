@@ -247,9 +247,9 @@ class VerbalTS(nn.Module):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
-        print(f"side_emb_raw: {side_emb_raw}")
-        print(f"diffusion_emb: {diffusion_emb}")
-        print(f"x_raw: {x_raw.shape}")
+        print(f"side_emb_raw: {side_emb_raw.shape}") # [bs, 128, 1, 128]
+        print(f"diffusion_emb: {diffusion_emb.shape}")
+        print(f"x_raw: {x_raw.shape}") #[bs, 1, c, 128]
         breakpoint()
         x_list = []
         side_list = []
@@ -261,10 +261,11 @@ class VerbalTS(nn.Module):
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
 
-        if self.attention_mask_type == "full" or attr_emb_raw is None:
-            attention_mask = None
-        elif self.attention_mask_type == "parallel":
-            attention_mask = self.get_mask(0, [x_list[i].shape[-1] for i in range(len(x_list))], device=x_raw.device)
+        breakpoint()
+        # if self.attention_mask_type == "full" or attr_emb_raw is None:
+        #     attention_mask = None
+        # elif self.attention_mask_type == "parallel":
+        #     attention_mask = self.get_mask(0, [x_list[i].shape[-1] for i in range(len(x_list))], device=x_raw.device)
         
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)

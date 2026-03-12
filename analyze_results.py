@@ -251,7 +251,7 @@ def calculate_all_scores(results_path):
             real.shape[-1],
             device,
         )
-        # print(f"Discriminative Score Metrics: {discriminative_score}")
+        print(f"Discriminative Score Metrics: {discriminative_score}")
 
         predictive_score = predictive_score_metrics(real, fake, device)
         # print(f"Predictive Score Metrics: {predictive_score}")

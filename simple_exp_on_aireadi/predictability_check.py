@@ -108,7 +108,7 @@ def visualize(model, dataset, num_examples=3):
             sample = dataset[i]
             prefix = torch.from_numpy(sample["prefix"]).unsqueeze(0).to(device)
             # 反缩放回真实血糖值 (400.0 是 Dataset 里的缩放系数)
-            target = sample["target"].cpu().numpy()
+            target = sample["target"]
             pred = model(prefix).squeeze(0).cpu().numpy()
             prefix_np = prefix.cpu().numpy()
 

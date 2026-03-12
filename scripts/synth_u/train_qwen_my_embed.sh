@@ -4,7 +4,7 @@ CUDA_VISIBLE_DEVICES=6 python run.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
-    --save_folder ../save/synth_u/qwen_my_embeds_v2 \
+    --save_folder ../save/synth_u/qwen_my_embeds_v2_0312 \
     --model_diff_config_path configs/synth_u/diff/model_text2ts_dep.yaml \
     --model_cond_config_path configs/synth_u/cond/text_msmdiffmv.yaml \
     --train_config_path configs/synth_u/train.yaml \

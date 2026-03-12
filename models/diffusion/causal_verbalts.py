@@ -68,10 +68,10 @@ class TsPatchEmbedding(nn.Module):
             x = self.padding_patch_layer(x_in)
         else:
             x = x_in
-        breakpoint()
-        x = x.unfold(dimension=3, size=self.L_patch_len, step=self.L_patch_len)
+        x = x.unfold(dimension=3, size=self.L_patch_len, step=self.L_patch_len) # (B, c, n_var, t/L_patch_len, L_patch_len)
         B, C, n_var, Nl, Pl = x.shape
         x = x.permute(0, 2, 3, 4, 1).contiguous().reshape(B, n_var, Nl, Pl*C)
+        # above they did patchify
         x = self.value_embedding(x)
         x = x.permute(0, 3, 1, 2).contiguous()
         return x
@@ -268,7 +268,7 @@ class CausalVerbalTS(nn.Module):
             print(f"{i}-th elemebt in x_list: {x.shape}")
             print(f"{i}-th elemebt in side_list: {side_emb.shape}")
 
-        # breakpoint()
+        breakpoint()
         # if self.attention_mask_type == "full" or attr_emb_raw is None:
         #     attention_mask = None
         # elif self.attention_mask_type == "parallel":

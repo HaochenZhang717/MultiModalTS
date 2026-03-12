@@ -131,10 +131,11 @@ class ResidualBlock(nn.Module):
             )
 
     def forward_time(self, y, base_shape, attention_mask=None):
-        B, channel, K, L = base_shape
+        # do attention in time direction
+        B, channel, K, L = base_shape # torch.Size([512, 64, 1, 47])
         if L == 1:
             return y
-        y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L)
+        y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L) # aggregate all time_vars
         y = self.time_layer(y.permute(0, 2, 1), mask=attention_mask).permute(0, 2, 1)
         y = y.reshape(B, K, channel, L).permute(0, 2, 1, 3).reshape(B, channel, K * L)
         return y
@@ -177,8 +178,11 @@ class ResidualBlock(nn.Module):
         if condition_type == "adaLN":
             y = self.modulate(y, gama, beta)
 
-        breakpoint()
+        # breakpoint()
+        # y.shape == torch.Size([512, 64, 1, 47])
+        # base_shape == torch.Size([512, 64, 1, 47])
         y = self.forward_time(y, base_shape, attention_mask)
+        breakpoint()
         y = self.forward_feature(y, base_shape, None)
 
         if condition_type == "adaLN":

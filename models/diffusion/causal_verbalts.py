@@ -299,8 +299,8 @@ class CausalVerbalTS(nn.Module):
         patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
         # print(f"x_in: {x_in.shape}")
         # print(f"side_in: {side_in.shape}")
-        print(f"patch_attn_mask: {patch_attn_mask.shape}")
-        breakpoint()
+        # print(f"patch_attn_mask: {patch_attn_mask.shape}")
+        # breakpoint()
 
 
         # if attr_emb_raw is None:
@@ -352,15 +352,19 @@ class CausalVerbalTS(nn.Module):
         x = F.relu(x)
         x = x.reshape(B, self.channels, Nk, Nl)
 
+
+
         start_id = 0
         all_out = []
         for i in range(len(x_list)):
             x_out = x[:,:,:,start_id:start_id+x_list[i].shape[-1]]
+            print(f"x_out.shape = {x_out.shape}")
             x_out = self.patch_decoder[i](x_out)
             x_out = x_out[:, :, :, :L]
             all_out.append(x_out)
             start_id += x_list[i].shape[-1]
 
+        breakpoint()
         all_out = torch.cat(all_out, dim=1)
         all_out = self.multipatch_mixer(all_out.permute(0, 2, 3, 1).contiguous())
         all_out = all_out.reshape((B_raw, n_var, L))

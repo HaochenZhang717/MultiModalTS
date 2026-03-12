@@ -38,11 +38,12 @@
 
 from torch.utils.data import DataLoader
 
-from .data import CustomDataset, AIREADIDataset
+from .data import CustomDataset, AIREADIDataset, CausalDataset
 
 
 datasets = {
     "custom": CustomDataset,
+    "causal": CausalDataset,
     "ai_readi": AIREADIDataset,
 }
 

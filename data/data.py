@@ -608,6 +608,158 @@ class AIREADISplit(Dataset):
         return sample
 
 
+
+import os
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+
+
+class CausalDataset:
+    """
+    Wrapper class so that the block-causal dataset fits
+    the GenerationDataset interface.
+    """
+
+    def __init__(
+        self,
+        ts_path,
+        text_embed_path,
+        num_segments=4,
+        **kwargs
+    ):
+        self.ts_path = ts_path
+        self.text_embed_path = text_embed_path
+        self.num_segments = num_segments
+
+        self.attr_n_ops = None
+
+    def get_split(self, split, text_type=None, *args):
+        return CausalSplit(
+            ts_path=self.ts_path,
+            text_embed_path=self.text_embed_path,
+            num_segments=self.num_segments,
+            split=split,
+        )
+
+
+class CausalSplit(Dataset):
+
+    def __init__(
+        self,
+        ts_path,
+        text_embed_path,
+        num_segments=4,
+        split="train",
+    ):
+        super().__init__()
+
+        self.split = split
+        self.num_segments = num_segments
+
+        # ------------------------
+        # load data
+        # ------------------------
+        self.ts = np.load(f"{ts_path}/{split}_ts.npy", allow_pickle=True)  # (N,T,C)
+        self.text_embed = torch.load(f"{text_embed_path}/{split}_embeds.pt", map_location="cpu")
+
+        self.N, self.T, self.C = self.ts.shape
+
+        assert self.T % self.num_segments == 0
+
+        self.segment_length = self.T // self.num_segments
+
+        self.ids = sorted(
+            self.text_embed.keys(),
+            key=lambda x: int(x.replace("image", "")),
+        )
+
+        self.block_ids = list(range(self.num_segments))
+        self.num_block_choices = len(self.block_ids)
+
+        print(
+            f"[CausalSplit:{self.split}] "
+            f"N={self.N}, T={self.T}, C={self.C}, segments={self.num_segments}"
+        )
+
+    def __len__(self):
+        return len(self.ids) * self.num_block_choices
+
+    def __getitem__(self, idx):
+
+        sample_idx = idx // self.num_block_choices
+        block_offset = idx % self.num_block_choices
+
+        target_block = self.block_ids[block_offset]
+
+        image_id = self.ids[sample_idx]
+        ts_id = int(image_id.replace("image", ""))
+
+        ts = self.ts[ts_id]  # (T,C)
+
+        ts = torch.from_numpy(ts).float().transpose(0, 1)  # (C,T)
+
+        # ------------------------
+        # text embedding
+        # ------------------------
+
+        channel_embeds = []
+
+        for c in range(self.C):
+            key = f"seg{target_block+1}_channel{c}"
+            emb = self.text_embed[image_id][key]
+            channel_embeds.append(emb)
+
+        text_embed = torch.stack(channel_embeds, dim=0)  # (C,D)
+
+        # ------------------------
+        # masks
+        # ------------------------
+
+        start = target_block * self.segment_length
+        end = (target_block + 1) * self.segment_length
+
+        loss_mask = torch.zeros(self.T)
+        loss_mask[start:end] = 1
+
+        attn_mask = torch.zeros(self.T)
+        attn_mask[:end] = 1
+
+        item = {
+            "ts": ts,
+            "ts_len": self.T,
+            "text_embedding": text_embed,
+            "loss_mask": loss_mask,
+            "attn_mask": attn_mask,
+            "block_id": target_block,
+            "image_id": image_id,
+            "ts_id": ts_id,
+        }
+
+        return item
+
+    @staticmethod
+    def collate_fn(batch):
+
+        out = {}
+
+        out["ts"] = torch.stack([b["ts"] for b in batch])
+        out["text_embedding"] = torch.stack([b["text_embedding"] for b in batch])
+
+        out["loss_mask"] = torch.stack([b["loss_mask"] for b in batch])
+        out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])
+
+        out["ts_len"] = torch.tensor([b["ts_len"] for b in batch])
+
+        out["block_id"] = torch.tensor([b["block_id"] for b in batch])
+
+        out["image_id"] = [b["image_id"] for b in batch]
+
+        out["ts_id"] = torch.tensor([b["ts_id"] for b in batch])
+
+        return out
+
+
 if __name__ == "__main__":
     parquet_path = "/Users/zhc/Documents/AI-READI/glucose_train.parquet"
     df = pd.read_parquet(parquet_path).copy()

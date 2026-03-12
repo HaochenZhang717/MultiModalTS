@@ -227,8 +227,10 @@ class CustomSplit(Dataset):
                 print("using precomputed caps embedding.")
         elif self.text_type == "my_generated_text_embeds":
             caps_embed_path = os.path.join(
-                self.folder, self.split + "_text_my_caps_v2_embeds.pt"
+                self.folder, self.split + "_text_my_caps_v2_embeds_qwen06b.pt"
             )
+
+            # valid_text_my_caps_v2_embeds_qwen06b
             # caps_embed_path = os.path.join(
             #     self.folder, self.split + "_text_my_caps_v2_embeds.npy"
             # )

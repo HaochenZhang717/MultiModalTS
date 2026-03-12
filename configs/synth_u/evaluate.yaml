@@ -1,7 +1,7 @@
 ### Dataset ###
 data:
   name: custom
-  folder: /playpen/haochenz/synthetic_u
+  folder: /playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u
 
 ### Evaluate ###
 eval:

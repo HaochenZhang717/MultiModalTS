@@ -88,35 +88,44 @@ class CausalConditionalGenerator(nn.Module):
 
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
+        ts, tp, text_embed, _, _ = self._unpack_data_cond_gen(batch)
 
         samples = []
-        B = ts.shape[0]
+        B, _, T = ts.shape
+        num_segments = self.diff_configs["num_segments"]
+        assert T % num_segments == 0
+        segment_length = T // num_segments
 
-        if loss_mask is not None:
-            loss_mask = loss_mask.unsqueeze(1)  # (B,1,T)
+        text_embed = self.cond_projector(text_embed)
 
         for i in range(n_samples):
-            x = torch.randn_like(ts)
-            x = x * loss_mask + ts * (1 - loss_mask)
+            for causal_step in range(num_segments):
+                # for each causal step, we need to first construct loss_mask and attn_mask,
+                attn_mask = torch.zeros_like(ts).sum(1)
+                attn_mask[:, :(causal_step+1)*segment_length] = 1.0
 
-            text_embed = self.cond_projector(text_embed)
+                loss_mask = torch.zeros_like(ts).sum(1)
+                loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
 
-            for t in range(self.generator.num_steps-1, -1, -1):
-                noise = torch.randn_like(x)
-                t = (torch.ones(B, device=self.device) * t).long()
-
-                pred_noise, _ = self.generator.predict_noise(x, tp, text_embed, t, attn_mask)
-                if sampler == "ddpm":
-                    raise NotImplementedError
-                    # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
-                else:
-                    x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
-
-                x = x_pred * loss_mask + ts * (1 - loss_mask)
+                x = torch.randn_like(ts)
+                x = x * loss_mask + ts * (1 - loss_mask)
 
 
-            samples.append(x)
+                for t in range(self.generator.num_steps-1, -1, -1):
+                    noise = torch.randn_like(x)
+                    t = (torch.ones(B, device=self.device) * t).long()
+
+                    pred_noise, _ = self.generator.predict_noise(x, tp, text_embed, t, attn_mask)
+                    if sampler == "ddpm":
+                        raise NotImplementedError
+                        # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+                    else:
+                        x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+
+                    x = x_pred * loss_mask + ts * (1 - loss_mask)
+
+
+                samples.append(x)
         return torch.stack(samples)
     
     def generate_constraint(self, batch, n_samples, sampler="ddim"):

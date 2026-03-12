@@ -1,6 +1,7 @@
 device: cuda:0
 
 diffusion:
+  num_segments: 4
   type: Text2Ts
   condition_type: adaLN
   layers: 3

@@ -87,16 +87,11 @@ def downsample_attn_mask(attn_mask, L_patch_len):
     Returns:
         patch_mask: (B, N_patch)
     """
-
     B, L = attn_mask.shape
     assert L % L_patch_len == 0
-    # unfold 成 patch
     patch_mask = attn_mask.unfold(dimension=1, size=L_patch_len, step=L_patch_len)
-    # shape: (B, N_patch, L_patch_len)
-    # patch 内只要有一个 token 有效 → patch 有效
-    breakpoint()
-    patch_mask = patch_mask.max(dim=-1).values
-    return patch_mask
+    assert torch.all(patch_mask == patch_mask[:,:,0].unsqueeze(-1))
+    return patch_mask[:, :, 0]
 
 class SidePatchEmbedding(nn.Module):
     def __init__(self, L_patch_len, channels, d_model, dropout):

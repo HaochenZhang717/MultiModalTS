@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.diffusion.verbalts import VerbalTS
+from models.diffusion.causal_verbalts import CausalVerbalTS
 from models.diffusion.DiT import DiTModel
 from samplers import CausalDDPMSampler, DDIMSampler
 import numpy as np
@@ -17,7 +17,7 @@ class CausalUnConditionalGenerator(nn.Module):
 
     def _init_diff(self, configs):
         configs["device"] = self.device
-        self.diff_model = VerbalTS(configs, inputdim=1).to(self.device)
+        self.diff_model = CausalVerbalTS(configs, inputdim=1).to(self.device)
 
         # self.diff_model = DiTModel(configs).to(self.device)
         self.num_steps = configs["num_steps"]

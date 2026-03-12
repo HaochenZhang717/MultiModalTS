@@ -368,9 +368,12 @@ class CausalVerbalTS(nn.Module):
             all_out.append(x_out)
             start_id += x_list[i].shape[-1]
 
-        breakpoint()
         all_out = torch.cat(all_out, dim=1)
-        all_out = self.multipatch_mixer(all_out.permute(0, 2, 3, 1).contiguous())
+        all_out = all_out.permute(0, 2, 3, 1).contiguous()
+        print(f"all_out.shape = {all_out.shape}")
+        all_out = self.multipatch_mixer(all_out)
+        print(f"all_out.shape = {all_out.shape}")
+        breakpoint()
         all_out = all_out.reshape((B_raw, n_var, L))
         return all_out, {}
     

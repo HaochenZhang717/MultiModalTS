@@ -181,7 +181,7 @@ class ResidualBlock(nn.Module):
         # breakpoint()
         # y.shape == torch.Size([512, 64, 1, 47])
         # base_shape == torch.Size([512, 64, 1, 47])
-        y = self.forward_time(y, base_shape, attention_mask)
+        y = self.forward_time(y, base_shape, attention_mask=None) # set to attention_mask==None for now.
         breakpoint()
         y = self.forward_feature(y, base_shape, None)
 

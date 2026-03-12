@@ -273,39 +273,46 @@ class CausalVerbalTS(nn.Module):
         print(f"x_in: {x_in.shape}")
         print(f"side_in: {side_in.shape}")
         # breakpoint()
-        if attr_emb_raw is None:
-            attr_emb = torch.zeros_like(x_in)
-        else:
-            if "text_projector" in self.config or "aireadi_projector" in self.config:
-
-                if "text_projector" in self.config:
-                    projector_cfg = self.config["text_projector"]
-                else:
-                    projector_cfg = self.config["aireadi_projector"]
 
 
-                if "scale" in projector_cfg:
-                    assert len(scale_length) == attr_emb_raw.shape[2]
-                    mscale_attr_list = []
-                    for i in range(len(scale_length)):
-                        tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
-                        mscale_attr_list.append(tmp_scale_attr)
-                    attr_emb = torch.cat(mscale_attr_list, dim=2)
-                    attr_emb = attr_emb.permute(0, 3, 1, 2)
-                else:
-                    raise ValueError
-            else:
-                # print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
-                B, _, Nk, Nl = x_in.shape
-                # print(f"Nk: {Nk}, Nl: {Nl}")
-                # breakpoint()
-                attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
+
+
+        # if attr_emb_raw is None:
+        #     attr_emb = torch.zeros_like(x_in)
+        # else:
+        #     if "text_projector" in self.config or "aireadi_projector" in self.config:
+        #
+        #         if "text_projector" in self.config:
+        #             projector_cfg = self.config["text_projector"]
+        #         else:
+        #             projector_cfg = self.config["aireadi_projector"]
+        #
+        #
+        #         if "scale" in projector_cfg:
+        #             assert len(scale_length) == attr_emb_raw.shape[2]
+        #             mscale_attr_list = []
+        #             for i in range(len(scale_length)):
+        #                 tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
+        #                 mscale_attr_list.append(tmp_scale_attr)
+        #             attr_emb = torch.cat(mscale_attr_list, dim=2)
+        #             attr_emb = attr_emb.permute(0, 3, 1, 2)
+        #         else:
+        #             raise ValueError
+        #     else:
+        #         # print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
+        #         B, _, Nk, Nl = x_in.shape
+        #         # print(f"Nk: {Nk}, Nl: {Nl}")
+        #         # breakpoint()
+        #         attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
 
 
         # print("attr_emb.shape", attr_emb.shape)
         # attr_emb.shape==torch.Size([512, 64, 1, 47])
         # breakpoint()
         B, _, Nk, Nl = x_in.shape
+
+        attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
+
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:

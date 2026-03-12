@@ -83,6 +83,7 @@ class CausalConditionalGenerator(nn.Module):
 
     def _unpack_data_cond_gen(self, batch):
         loss_mask = None
+        breakpoint()
         ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
         tp = batch["tp"].to(self.device).float()
         if "multimodal" in self.cond_configs["cond_modal"]:

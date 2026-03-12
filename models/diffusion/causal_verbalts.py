@@ -6,12 +6,111 @@ import time
 import numpy as np
 import copy
 from models.encoders.side_encoder import SideEncoder_Var
+from timm.models.vision_transformer import Mlp
+
+class NormAttention(nn.Module):
+    """
+    Attention module of LightningDiT.
+    """
+
+    def __init__(
+            self,
+            dim: int,
+            num_heads: int,
+            qkv_bias: bool = False,
+            qk_norm: bool = False,
+            attn_drop: float = 0.,
+            proj_drop: float = 0.,
+            norm_layer: nn.Module = nn.LayerNorm,
+    ) -> None:
+        super().__init__()
+        assert dim % num_heads == 0, 'dim should be divisible by num_heads'
+
+        self.num_heads = num_heads
+        self.head_dim = dim // num_heads
+        self.scale = self.head_dim ** -0.5
+
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.q_norm = norm_layer(self.head_dim) if qk_norm else nn.Identity()
+        self.k_norm = norm_layer(self.head_dim) if qk_norm else nn.Identity()
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self, x: torch.Tensor, attn_mask=None) -> torch.Tensor:
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dim).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv.unbind(0)
+        q, k = self.q_norm(q), self.k_norm(k)
+
+        q = q.to(v.dtype)
+        k = k.to(v.dtype)  # rope may change the q,k's dtype
+        x = F.scaled_dot_product_attention(
+            q, k, v,
+            dropout_p=self.attn_drop.p if self.training else 0.,
+            attn_mask=attn_mask)
+        x = x.transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+class SwiGLUFFN(nn.Module):
+    def __init__(
+        self,
+        in_features: int,
+        hidden_features: int,
+        out_features: int,
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        self.w12 = nn.Linear(in_features, 2 * hidden_features, bias=bias)
+        self.w3 = nn.Linear(hidden_features, out_features, bias=bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x12 = self.w12(x)
+        x1, x2 = x12.chunk(2, dim=-1)
+        hidden = F.silu(x1) * x2
+        return self.w3(hidden)
+
+
+class EncoderLayer(nn.Module):
+    def __init__(
+        self,
+        hidden_size,
+        num_heads,
+    ):
+        super().__init__()
+        mlp_ratio = 4.0
+        # Initialize normalization layers
+        self.norm1 = nn.LayerNorm(hidden_size, elementwise_affine=False, eps=1e-6)
+        self.norm2 = nn.LayerNorm(hidden_size, elementwise_affine=False, eps=1e-6)
+
+        # Initialize attention layer
+        self.attn = NormAttention(hidden_size, num_heads=num_heads)
+
+        # Initialize MLP layer
+        mlp_hidden_dim = int(hidden_size * mlp_ratio)
+        self.mlp = SwiGLUFFN(hidden_size, int(2/3 * mlp_hidden_dim), hidden_size)
+
+    def forward(self, x, attn_mask):
+        x = x + self.attn(self.norm1(x), attn_mask=attn_mask)
+        x = x + self.mlp(self.norm2(x))
+        return x
+
+
 
 def get_torch_trans(heads=8, layers=1, channels=64):
-    encoder_layer = nn.TransformerEncoderLayer(
-        d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu", batch_first=True
-    )
-    return nn.TransformerEncoder(encoder_layer, num_layers=layers)
+    # encoder_layer = nn.TransformerEncoderLayer(
+    #     d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu", batch_first=True
+    # )
+    # encoder_layer = EncoderLayer(
+    #     hidden_size=channels, num_heads=heads,
+    # )
+    return EncoderLayer(hidden_size=channels, num_heads=heads)
+
 
 def get_torch_cross_trans(heads=8, layers=1, channels=64):
     encoder_layer = nn.TransformerDecoderLayer(
@@ -301,6 +400,8 @@ class CausalVerbalTS(nn.Module):
         side_in = torch.cat(side_list, dim=-1)
         patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
         patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
+        patch_attn_mask = patch_attn_mask.unsqueeze(1).bool()
+        breakpoint()
         # print(f"x_in: {x_in.shape}")
         # print(f"side_in: {side_in.shape}")
         # print(f"patch_attn_mask: {patch_attn_mask.shape}")
@@ -346,8 +447,8 @@ class CausalVerbalTS(nn.Module):
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:
-            # x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=patch_attn_mask, condition_type=self.config["condition_type"])
-            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=None, condition_type=self.config["condition_type"])
+            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=patch_attn_mask, condition_type=self.config["condition_type"])
+            # x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=None, condition_type=self.config["condition_type"])
             skip.append(skip_connection)
 
         x = torch.sum(torch.stack(skip), dim=0) / math.sqrt(len(self.residual_layers))

@@ -53,62 +53,62 @@ def embed_numpy_to_pt(
 
 if __name__ == "__main__":
     embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps_v2.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/train_text_my_caps_v2_embeds_qwen06b.pt",
+        texts_array=np.load("/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/train_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/train_text_my_caps_v2_embeds_qwen06b.pt",
         batch_size=64,
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
     embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/test_text_my_caps_v2.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/test_text_my_caps_v2_embeds_qwen06b.pt",
+        texts_array=np.load("/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/test_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/test_text_my_caps_v2_embeds_qwen06b.pt",
         batch_size=64,
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
     embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps_v2.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_v2_embeds_qwen06b.pt",
+        texts_array=np.load("/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/valid_text_my_caps_v2.npy", allow_pickle=True),
+        output_pt_path="/playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u/valid_text_my_caps_v2_embeds_qwen06b.pt",
         batch_size=64,
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
 
-    embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds_qwen06b.pt",
-        batch_size=64,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-
-    embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/train_text_my_caps_embeds_qwen06b.pt",
-        batch_size=64,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-    embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/test_text_my_caps.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/test_text_my_caps_embeds_qwen06b.pt",
-        batch_size=64,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-    embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_embeds_qwen06b.pt",
-        batch_size=64,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-
-    embed_numpy_to_pt(
-        texts_array=np.load("/playpen/haochenz/synthetic_u/DiTDH-S-samples.npy", allow_pickle=True),
-        output_pt_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples-embeds_qwen06b.pt",
-        batch_size=64,
-        device="cuda" if torch.cuda.is_available() else "cpu",
-    )
-
-
-
+    # embed_numpy_to_pt(
+    #     texts_array=np.load("/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2.npy", allow_pickle=True),
+    #     output_pt_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples_v2_embeds_qwen06b.pt",
+    #     batch_size=64,
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    # )
+    #
+    #
+    # embed_numpy_to_pt(
+    #     texts_array=np.load("/playpen/haochenz/synthetic_u/train_text_my_caps.npy", allow_pickle=True),
+    #     output_pt_path="/playpen/haochenz/synthetic_u/train_text_my_caps_embeds_qwen06b.pt",
+    #     batch_size=64,
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    # )
+    #
+    # embed_numpy_to_pt(
+    #     texts_array=np.load("/playpen/haochenz/synthetic_u/test_text_my_caps.npy", allow_pickle=True),
+    #     output_pt_path="/playpen/haochenz/synthetic_u/test_text_my_caps_embeds_qwen06b.pt",
+    #     batch_size=64,
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    # )
+    #
+    # embed_numpy_to_pt(
+    #     texts_array=np.load("/playpen/haochenz/synthetic_u/valid_text_my_caps.npy", allow_pickle=True),
+    #     output_pt_path="/playpen/haochenz/synthetic_u/valid_text_my_caps_embeds_qwen06b.pt",
+    #     batch_size=64,
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    # )
+    #
+    #
+    # embed_numpy_to_pt(
+    #     texts_array=np.load("/playpen/haochenz/synthetic_u/DiTDH-S-samples.npy", allow_pickle=True),
+    #     output_pt_path="/playpen/haochenz/synthetic_u/DiTDH-S-samples-embeds_qwen06b.pt",
+    #     batch_size=64,
+    #     device="cuda" if torch.cuda.is_available() else "cpu",
+    # )
+    #
+    #
+    #

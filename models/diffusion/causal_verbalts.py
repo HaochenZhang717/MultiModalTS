@@ -63,10 +63,12 @@ class TsPatchEmbedding(nn.Module):
         )
 
     def forward(self, x_in):
+        # x_in (B, c, n_vars, t)
         if x_in.shape[-1] % self.L_patch_len:
             x = self.padding_patch_layer(x_in)
         else:
             x = x_in
+        breakpoint()
         x = x.unfold(dimension=3, size=self.L_patch_len, step=self.L_patch_len)
         B, C, n_var, Nl, Pl = x.shape
         x = x.permute(0, 2, 3, 4, 1).contiguous().reshape(B, n_var, Nl, Pl*C)

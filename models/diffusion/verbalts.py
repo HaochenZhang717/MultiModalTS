@@ -247,6 +247,9 @@ class VerbalTS(nn.Module):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
+        print(f"side_emb_raw: {side_emb_raw}")
+        print(f"diffusion_emb: {diffusion_emb}")
+        print(f"x_raw: {x_raw.shape}")
         breakpoint()
         x_list = []
         side_list = []

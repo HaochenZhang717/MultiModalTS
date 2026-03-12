@@ -49,7 +49,7 @@ class CausalConditionalGenerator(nn.Module):
         B = x.shape[0]
         if is_train:
             t = torch.randint(0, self.generator.num_steps, [B], device=self.device)
-
+            breakpoint()
             text_embed = self.cond_projector(text_embed)  # for now we are not using projector.
 
             loss = self.generator._noise_estimation_loss(x, tp, text_embed, t, loss_mask, attn_mask)

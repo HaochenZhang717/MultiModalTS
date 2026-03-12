@@ -95,8 +95,8 @@ class EncoderLayer(nn.Module):
         mlp_hidden_dim = int(hidden_size * mlp_ratio)
         self.mlp = SwiGLUFFN(hidden_size, int(2/3 * mlp_hidden_dim), hidden_size)
 
-    def forward(self, x, attn_mask):
-        x = x + self.attn(self.norm1(x), attn_mask=attn_mask)
+    def forward(self, x, mask):
+        x = x + self.attn(self.norm1(x), attn_mask=mask)
         x = x + self.mlp(self.norm2(x))
         return x
 

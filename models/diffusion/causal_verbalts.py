@@ -362,7 +362,7 @@ class CausalVerbalTS(nn.Module):
         all_out = []
         for i in range(len(x_list)):
             x_out = x[:,:,:,start_id:start_id+x_list[i].shape[-1]]
-            print(f"x_out.shape = {x_out.shape}")
+            # print(f"x_out.shape = {x_out.shape}")
             x_out = self.patch_decoder[i](x_out)
             x_out = x_out[:, :, :, :L]
             all_out.append(x_out)

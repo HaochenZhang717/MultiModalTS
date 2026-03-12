@@ -16,4 +16,5 @@ CUDA_VISIBLE_DEVICES=6 python run_causal.py \
     --base_patch 4 \
     --epochs 700 \
     --batch_size 512 \
-    --clip_cache_path ""
+    --clip_cache_path "" \
+    --n_runs 1

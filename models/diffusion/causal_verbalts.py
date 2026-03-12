@@ -176,7 +176,8 @@ class ResidualBlock(nn.Module):
         y = x + diffusion_emb
         if condition_type == "adaLN":
             y = self.modulate(y, gama, beta)
-        
+
+        breakpoint()
         y = self.forward_time(y, base_shape, attention_mask)
         y = self.forward_feature(y, base_shape, None)
 

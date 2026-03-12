@@ -41,10 +41,7 @@ class CausalConditionalGenerator(nn.Module):
             print("Load the pretrain unconditional generator")
         else:
             print("Learn from scratch")
-    
-    """
-    Finetune.
-    """
+
     def forward(self, batch, is_train):
         x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
         if attrs_embed_batch is None:
@@ -58,14 +55,9 @@ class CausalConditionalGenerator(nn.Module):
         if is_train:
             t = torch.randint(0, self.generator.num_steps, [B], device=self.device)
 
-            if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
-                attr_emb = self.cond_projector(attr_emb_raw, t)
-
             if "multimodal" in self.cond_configs["cond_modal"]:
                 attr_emb = self.cond_projector(attr_emb_raw)  # for now we are not using projector.
 
-            # print(f"attr_emb.shape = {attr_emb.shape}")
-            # print(f"attr_emb_raw.shape = {attr_emb_raw.shape}")
             loss = self.generator._noise_estimation_loss(x, tp, attr_emb, t, loss_mask)
             return loss
         
@@ -75,8 +67,8 @@ class CausalConditionalGenerator(nn.Module):
         for t in range(self.generator.num_steps):
             t = (torch.ones(B, device=self.device) * t).long()
 
-            if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
-                attr_emb = self.cond_projector(attr_emb_raw, t)
+            # if "text" in self.cond_configs["cond_modal"] and "diffstep" in self.cond_configs["text"]["text_projector"]:
+            #     attr_emb = self.cond_projector(attr_emb_raw, t)
 
             # print(f"attr_emb shape {attr_emb.shape}")
             tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, attr_emb, t, loss_mask)
@@ -114,9 +106,6 @@ class CausalConditionalGenerator(nn.Module):
         else:
             return self.generate_text(batch, n_samples, sampler)
 
-    """
-    Generation.
-    """
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
         ts, tp, attrs, attr_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)

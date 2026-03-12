@@ -76,6 +76,27 @@ class TsPatchEmbedding(nn.Module):
         x = x.permute(0, 3, 1, 2).contiguous()
         return x
 
+
+def downsample_attn_mask(attn_mask, L_patch_len):
+    """
+    Downsample time-level attention mask to patch-level mask.
+    Args:
+        attn_mask: (B, L) tensor
+        L_patch_len: patch length
+
+    Returns:
+        patch_mask: (B, N_patch)
+    """
+
+    B, L = attn_mask.shape
+    assert L % L_patch_len == 0
+    # unfold 成 patch
+    patch_mask = attn_mask.unfold(dimension=1, size=L_patch_len, step=L_patch_len)
+    # shape: (B, N_patch, L_patch_len)
+    # patch 内只要有一个 token 有效 → patch 有效
+    patch_mask = patch_mask.max(dim=-1).values
+    return patch_mask
+
 class SidePatchEmbedding(nn.Module):
     def __init__(self, L_patch_len, channels, d_model, dropout):
         super(SidePatchEmbedding, self).__init__()
@@ -214,7 +235,6 @@ class CausalVerbalTS(nn.Module):
         self.config = config
         self.n_var = config["n_var"]
         self.var_dep_type = config["var_dep_type"]
-        breakpoint()
         self.channels = config["channels"]
         self.multipatch_num = config["multipatch_num"]
         self.diffusion_embedding = DiffusionEmbedding(
@@ -260,14 +280,17 @@ class CausalVerbalTS(nn.Module):
         x_list = []
         side_list = []
         scale_length = []
+        attn_mask_list = []
         for i in range(self.multipatch_num):
             x = self.ts_downsample[i](x_raw)
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
+            attn_mask_list.append(downsample_attn_mask(attn_mask, self.config["base_patch"]*self.config["L_patch_len"]**i))
             print(f"{i}-th elemebt in x_list: {x.shape}")
             print(f"{i}-th elemebt in side_list: {side_emb.shape}")
+            print(f"{i}-th elemebt in attn_mask: {attn_mask_list[-1]}")
 
         breakpoint()
         # if self.attention_mask_type == "full" or attr_emb_raw is None:

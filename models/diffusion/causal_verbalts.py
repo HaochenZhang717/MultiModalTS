@@ -263,6 +263,8 @@ class CausalVerbalTS(nn.Module):
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
+            print(f"{i}-th elemebt in x_list: {x.shape}")
+            print(f"{i}-th elemebt in side_list: {side_emb.shape}")
 
         # breakpoint()
         # if self.attention_mask_type == "full" or attr_emb_raw is None:
@@ -274,7 +276,7 @@ class CausalVerbalTS(nn.Module):
         side_in = torch.cat(side_list, dim=-1)
         print(f"x_in: {x_in.shape}")
         print(f"side_in: {side_in.shape}")
-        # breakpoint()
+        breakpoint()
 
 
 

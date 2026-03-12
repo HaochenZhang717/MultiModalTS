@@ -316,7 +316,7 @@ class CausalVerbalTS(nn.Module):
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:
-            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=attention_mask, condition_type=self.config["condition_type"])
+            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=attn_mask, condition_type=self.config["condition_type"])
             skip.append(skip_connection)
 
         x = torch.sum(torch.stack(skip), dim=0) / math.sqrt(len(self.residual_layers))

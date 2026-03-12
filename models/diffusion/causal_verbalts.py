@@ -214,6 +214,7 @@ class CausalVerbalTS(nn.Module):
         self.config = config
         self.n_var = config["n_var"]
         self.var_dep_type = config["var_dep_type"]
+        breakpoint()
         self.channels = config["channels"]
         self.multipatch_num = config["multipatch_num"]
         self.diffusion_embedding = DiffusionEmbedding(

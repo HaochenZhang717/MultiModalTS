@@ -13,7 +13,6 @@ class CausalUnConditionalGenerator(nn.Module):
         super().__init__()
         self.device = configs["device"]
         self.configs = configs
-        breakpoint()
         self._init_diff(configs["diffusion"])
 
     def _init_diff(self, configs):

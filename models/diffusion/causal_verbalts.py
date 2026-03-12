@@ -296,10 +296,11 @@ class CausalVerbalTS(nn.Module):
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
         patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
+        patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
         # print(f"x_in: {x_in.shape}")
         # print(f"side_in: {side_in.shape}")
-        # print(f"patch_attn_mask: {patch_attn_mask.shape}")
-        # breakpoint()
+        print(f"patch_attn_mask: {patch_attn_mask.shape}")
+        breakpoint()
 
 
         # if attr_emb_raw is None:

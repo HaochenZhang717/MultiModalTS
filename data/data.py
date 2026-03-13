@@ -847,7 +847,7 @@ class CausalSampleSplit(Dataset):
             text_embed = torch.stack(channel_embeds, dim=0)  # (C,D)
         text_embed_all_segments.append(text_embed)
         text_embed_all_segments = torch.stack(text_embed_all_segments, dim=0) # (num_segments,C,D)
-
+        breakpoint()
 
         item = {
             "ts": ts,

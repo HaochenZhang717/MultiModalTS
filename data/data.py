@@ -841,7 +841,6 @@ class CausalSampleSplit(Dataset):
             channel_embeds = []
             for c in range(self.C):
                 key = f"seg{target_block+1}_channel{c}"
-                breakpoint()
                 emb = self.text_embed[image_id][key]
                 channel_embeds.append(emb)
             text_embed = torch.stack(channel_embeds, dim=0)  # (C,D)

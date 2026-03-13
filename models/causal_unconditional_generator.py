@@ -27,7 +27,6 @@ class CausalUnConditionalGenerator(nn.Module):
     def _noise_estimation_loss(self, x, tp, text_embed, t, loss_mask, attn_mask):
         noise = torch.randn_like(x)
         noisy_x = self.ddpm.forward(x, t, noise, loss_mask)
-
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)
         residual = noise - pred_noise
 

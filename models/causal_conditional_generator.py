@@ -96,7 +96,6 @@ class CausalConditionalGenerator(nn.Module):
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-        breakpoint()
         # text_embedding_all_segments.shape == (B, num_segments, n_vars, embed_dim)
         samples = []
         B, _, T = ts.shape

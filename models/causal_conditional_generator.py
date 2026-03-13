@@ -92,8 +92,7 @@ class CausalConditionalGenerator(nn.Module):
 
         samples = []
         B, _, T = ts.shape
-        breakpoint()
-        num_segments = self.diff_configs["num_segments"]
+        num_segments = self.diff_configs['diffusion']["num_segments"]
         assert T % num_segments == 0
         segment_length = T // num_segments
 

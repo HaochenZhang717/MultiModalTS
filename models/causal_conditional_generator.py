@@ -79,6 +79,13 @@ class CausalConditionalGenerator(nn.Module):
         attn_mask = batch["attn_mask"].to(self.device).float()
         return ts, tp, text_embed, loss_mask, attn_mask
 
+    def _unpack_data_cond_gen_for_sample(self, batch):
+        ts = batch["ts"].to(self.device).float()  # batch_size, num_channels, seq_len
+        B, _, T = ts.shape
+        tp = torch.arange(T).repeat(B, 1).to(self.device).float()
+        text_embedding_all_segments = batch["text_embedding_all_segments"].to(self.device).float()
+        return ts, tp, text_embedding_all_segments
+
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":
             raise ValueError("Not Changed for precomputed attr_embed yet")
@@ -88,45 +95,48 @@ class CausalConditionalGenerator(nn.Module):
 
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, text_embed, _, _ = self._unpack_data_cond_gen(batch)
-
+        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        # text_embedding_all_segments.shape == (B, num_segments, n_vars, embed_dim)
         samples = []
         B, _, T = ts.shape
         num_segments = self.diff_configs['diffusion']["num_segments"]
         assert T % num_segments == 0
         segment_length = T // num_segments
 
-        text_embed = self.cond_projector(text_embed)
-
         for i in range(n_samples):
+            generated_ts = torch.randn_like(ts)
             for causal_step in range(num_segments):
+                segment_embed = text_embed_all_segments[:, causal_step] # (B, n_vars, embed_dim)
+                segment_embed = self.cond_projector(segment_embed)
                 # for each causal step, we need to first construct loss_mask and attn_mask,
-                attn_mask = torch.zeros_like(ts).sum(1)
+                attn_mask = torch.zeros_like(ts).sum(1) # (B ,T)
                 attn_mask[:, :(causal_step+1)*segment_length] = 1.0
 
                 loss_mask = torch.zeros_like(ts).sum(1)
                 loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
-                loss_mask = loss_mask.unsqueeze(1)
+                loss_mask = loss_mask.unsqueeze(1) # (B, 1, T)
 
                 x = torch.randn_like(ts)
-                x = x * loss_mask + ts * (1 - loss_mask)
+                x = x * loss_mask + generated_ts * (1 - loss_mask)
 
 
                 for t in range(self.generator.num_steps-1, -1, -1):
                     noise = torch.randn_like(x)
                     t = (torch.ones(B, device=self.device) * t).long()
 
-                    pred_noise, _ = self.generator.predict_noise(x, tp, text_embed, t, attn_mask)
+                    pred_noise, _ = self.generator.predict_noise(x, tp, segment_embed, t, attn_mask)
                     if sampler == "ddpm":
                         raise NotImplementedError
                         # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
                     else:
                         x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
 
-                    x = x_pred * loss_mask + ts * (1 - loss_mask)
+                    x = x_pred * loss_mask + generated_ts * (1 - loss_mask)
 
+                generated_ts[:, :, causal_step*segment_length:(causal_step+1)*segment_length] \
+                    = x[:, :, causal_step*segment_length:(causal_step+1)*segment_length]
 
-                samples.append(x)
+            samples.append(generated_ts.clone().cpu())
         return torch.stack(samples)
     
     def generate_constraint(self, batch, n_samples, sampler="ddim"):

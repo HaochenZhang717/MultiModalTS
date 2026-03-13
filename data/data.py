@@ -835,7 +835,7 @@ class CausalSampleSplit(Dataset):
         # ------------------------
         # text embedding
         # ------------------------
-
+        breakpoint()
         text_embed_all_segments = []
         for target_block in self.block_ids:
             channel_embeds = []

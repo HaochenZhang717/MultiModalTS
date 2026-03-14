@@ -443,7 +443,7 @@ class CausalVerbalTS(nn.Module):
         B, _, Nk, Nl = x_in.shape
         attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
         attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
-
+        breakpoint()
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:

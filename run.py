@@ -33,6 +33,7 @@ def train(training_stage, train_configs, model_diff_configs, model_cond_configs,
             # model_cond_configs["attrs"]["num_attr_ops"] = dataset.num_attr_ops.tolist()
         model = ConditionalGenerator(model_diff_configs, model_cond_configs)
 
+    model = torch.compile(model)
     print("\n***** Train Configs *****")
     path = os.path.join(output_folder, "train_configs.yaml")
     save_configs(train_configs, path)

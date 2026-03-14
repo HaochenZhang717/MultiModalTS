@@ -198,7 +198,7 @@ seed_list = [1, 7, 42]
 df_list = []
 
 
-eval_record_folder = eval_configs["data"]["folder"]
+# eval_record_folder = eval_configs["data"]["folder"]
 for n in range(args.start_runid, args.n_runs):
     fix_seed = seed_list[n]
     random.seed(fix_seed)
@@ -209,7 +209,7 @@ for n in range(args.start_runid, args.n_runs):
     output_folder = os.path.join(save_folder, str(n))
     os.makedirs(output_folder, exist_ok=True)
     eval_configs["eval"]["model_path"] = ""
-    eval_configs["data"]["folder"] = eval_record_folder
+    # eval_configs["data"]["folder"] = eval_record_folder
     if args.generator_pretrain_path != "":
         model_diff_configs["generator_pretrain_path"] = f"{args.generator_pretrain_path}/{n}/ckpts/model_best_loss.pth"
     else:

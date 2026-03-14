@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from models.diffusion.causal_verbalts import CausalVerbalTS
-from samplers import CausalDDPMSampler, DDIMSampler
+from samplers import DDPMSampler, DDIMSampler
 import numpy as np
 import time
 import random
@@ -20,16 +20,18 @@ class CausalUnConditionalGenerator(nn.Module):
 
         # self.diff_model = DiTModel(configs).to(self.device)
         self.num_steps = configs["num_steps"]
-        self.ddpm = CausalDDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
+        self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
         self.ddim = DDIMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
     
     def _noise_estimation_loss(self, x, tp, text_embed, t, loss_mask, attn_mask):
         noise = torch.randn_like(x)
 
-        noise_mask = (attn_mask - loss_mask).unsqueeze(1)
-        noisy_x = self.ddpm.forward(x, t, noise, noise_mask)
+        # noise_mask = (attn_mask - loss_mask).unsqueeze(1)
+
+        noisy_x = self.ddpm.forward(x, t, noise)
         # print(noisy_x.shape)
         # breakpoint()
+        noisy_x[:, :, :96] = x[:, :, :96]
 
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)
         residual = noise - pred_noise

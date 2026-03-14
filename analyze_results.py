@@ -240,7 +240,7 @@ def analyze_unconditional_results():
 def calculate_all_scores(results_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
-    real = results_dict["real_ts"]
+    real = results_dict["real_ts"][:,:,:32]
     disc_score_list = []
     pred_score_list = []
     for i in range(10):

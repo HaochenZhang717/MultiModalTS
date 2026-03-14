@@ -10,6 +10,11 @@ import time
 import random
 import yaml
 
+
+
+PREDICT_START = 96
+PREDICT_END = 128
+
 class CausalConditionalGenerator(nn.Module):
     def __init__(self, diff_configs, cond_configs):
         super().__init__()
@@ -50,10 +55,10 @@ class CausalConditionalGenerator(nn.Module):
 
         # here we test only predict the first block
         attn_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
-        attn_mask[:, :64] = 1
+        attn_mask[:, :PREDICT_END] = 1
 
         loss_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
-        loss_mask[:, 32:64] = 1
+        loss_mask[:, PREDICT_START:PREDICT_END] = 1
 
         text_embed = text_embedding_all_segments[:, 1]
 
@@ -161,11 +166,11 @@ class CausalConditionalGenerator(nn.Module):
         B, _, T = ts.shape
         # here we test only predict the first block
         attn_mask = torch.zeros((B, T)).to(ts.device)  # (B ,T)
-        attn_mask[:, :64] = 1
+        attn_mask[:, :PREDICT_END] = 1
 
         for i in range(n_samples):
             x = torch.randn_like(ts)
-            x[:,:,:32] = ts[:,:,:32]
+            x[:,:,:PREDICT_START] = ts[:,:,:PREDICT_START]
             attr_emb = self.cond_projector(text_embed)
 
             for t in range(self.generator.num_steps-1, -1, -1):
@@ -177,7 +182,7 @@ class CausalConditionalGenerator(nn.Module):
                 else:
                     x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
 
-                x[:, :, :32] = ts[:, :, :32]
+                x[:, :, :PREDICT_START] = ts[:, :, :PREDICT_START]
 
             samples.append(x)
         return torch.stack(samples)

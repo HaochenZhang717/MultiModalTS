@@ -345,10 +345,10 @@ if __name__ == "__main__":
         block_id=3
     )
 
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
-    #     block_id=None
-    # )
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+        block_id=None
+    )
 
     calculate_all_scores(
         "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",

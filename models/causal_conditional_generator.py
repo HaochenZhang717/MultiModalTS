@@ -12,8 +12,8 @@ import yaml
 
 
 
-PREDICT_START = 32
-PREDICT_END = 64
+PREDICT_START = 64
+PREDICT_END = 96
 
 class CausalConditionalGenerator(nn.Module):
     def __init__(self, diff_configs, cond_configs):

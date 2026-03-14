@@ -32,7 +32,7 @@ class CausalUnConditionalGenerator(nn.Module):
         use_prefix = (attn_mask - loss_mask).unsqueeze(1)
         noisy_x = noisy_x * (1 - use_prefix) + x * use_prefix
         # prefix_length = attn_mask.sum(-1) - loss_mask.sum(-1)
-        breakpoint()
+        # breakpoint()
         # noisy_x[:, :, :96] = x[:, :, :96]
 
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)

@@ -25,20 +25,21 @@ class UnConditionalGenerator(nn.Module):
         self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
         self.ddim = DDIMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
     
-    def _noise_estimation_loss(self, x, tp, attr_emb, t, loss_mask):
+    def _noise_estimation_loss(self, x, tp, attr_emb, t):
         noise = torch.randn_like(x)
         noisy_x = self.ddpm.forward(x, t, noise)
 
-        if loss_mask is not None:
-            noisy_x = noisy_x * loss_mask.unsqueeze(1) + x * (1 - loss_mask.unsqueeze(1)) # add noise to the precition area only
+        # if loss_mask is not None:
+        #     noisy_x = noisy_x * loss_mask.unsqueeze(1) + x * (1 - loss_mask.unsqueeze(1)) # add noise to the precition area only
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)
         residual = noise - pred_noise
+        loss_dict["noise_loss"] = (residual ** 2).mean()
 
-        if loss_mask is None: # when we just do generation
-            loss_dict["noise_loss"] = (residual ** 2).mean()
-        else: # when we are doing prediction or imputation
-            mask = loss_mask.unsqueeze(1)  # (B,1,T)
-            loss_dict["noise_loss"] = ((residual ** 2) * mask).sum() / mask.sum()
+        # if loss_mask is None: # when we just do generation
+        #     loss_dict["noise_loss"] = (residual ** 2).mean()
+        # else: # when we are doing prediction or imputation
+        #     mask = loss_mask.unsqueeze(1)  # (B,1,T)
+        #     loss_dict["noise_loss"] = ((residual ** 2) * mask).sum() / mask.sum()
 
         all_loss = torch.zeros_like(loss_dict["noise_loss"])
         for k in loss_dict.keys():

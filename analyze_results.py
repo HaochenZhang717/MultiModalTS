@@ -342,7 +342,7 @@ if __name__ == "__main__":
     )
 
     calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block3",
+        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block3",
         block_id=3
     )
 

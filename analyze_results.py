@@ -355,6 +355,11 @@ if __name__ == "__main__":
         block_id=0
     )
 
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block0.pt",
+        block_id=0
+    )
+
 
     # all = torch.load('samples.pth', map_location="cpu")
     #

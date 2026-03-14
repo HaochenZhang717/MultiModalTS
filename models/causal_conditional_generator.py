@@ -152,7 +152,7 @@ class CausalConditionalGenerator(nn.Module):
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-        text_embed = text_embed_all_segments[:, :-1]
+        text_embed = text_embed_all_segments[:, -1]
         samples = []
         B, _, T = ts.shape
         attn_mask = torch.ones((B, T)).to(ts.device)  # (B ,T)

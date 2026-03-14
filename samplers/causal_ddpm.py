@@ -27,7 +27,7 @@ class CausalDDPMSampler(BaseSampler):
         Return:
             noisy_x: (B,V,L)
         """
-        noisy_x = self.alpha_bar_sqrt[t] * x0 + self.one_minus_alpha_bar_sqrt[t] * noise * noise_mask.unsqueeze(1)
+        noisy_x = self.alpha_bar_sqrt[t] * x0 + self.one_minus_alpha_bar_sqrt[t] * noise * noise_mask
         return noisy_x
     
     def reverse(self, xt, pred_noise, t, noise):

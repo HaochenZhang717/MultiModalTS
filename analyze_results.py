@@ -237,15 +237,18 @@ def analyze_unconditional_results():
     print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
 
 
-def calculate_all_scores(results_path):
+def calculate_all_scores(results_path, block_id):
+    pred_start = block_id * 32
+    pred_end = block_id * 32 + 32
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
-    real = results_dict["real_ts"][:,:,-32:]
+    real = results_dict["real_ts"][:,:,pred_start:pred_end]
     disc_score_list = []
     pred_score_list = []
-    for i in range(10):
-        print(i)
-        fake = results_dict["sampled_ts"][i][:,:,-32:]
+    for i in range(1):
+        # print(i)
+        fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
         print(f"real: {real.shape}, fake: {fake.shape}")
         # breakpoint()
         discriminative_score = discriminative_score_metrics(
@@ -255,10 +258,10 @@ def calculate_all_scores(results_path):
         )
         print(f"Discriminative Score Metrics: {discriminative_score}")
 
-        predictive_score = predictive_score_metrics(real, fake, device)
-        # print(f"Predictive Score Metrics: {predictive_score}")
-        disc_score_list.append(discriminative_score)
-        pred_score_list.append(predictive_score)
+        # predictive_score = predictive_score_metrics(real, fake, device)
+        # # print(f"Predictive Score Metrics: {predictive_score}")
+        # disc_score_list.append(discriminative_score)
+        # pred_score_list.append(predictive_score)
 
     disc_score_arr = np.array(disc_score_list)
     pred_score_arr = np.array(pred_score_list)
@@ -322,8 +325,26 @@ if __name__ == "__main__":
     # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
     # calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_short_generation/0/samples.pth")
     # calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_prediction/0/samples.pth")
-    calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0314/0/samples.pth")
+    # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0314/0/samples.pth")
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block0",
+        block_id=0
+    )
 
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block1",
+        block_id=1
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block2",
+        block_id=2
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block3",
+        block_id=3
+    )
 
 
     # all = torch.load('samples.pth', map_location="cpu")

@@ -29,18 +29,15 @@ class UnConditionalGenerator(nn.Module):
         noise = torch.randn_like(x)
         noisy_x = self.ddpm.forward(x, t, noise)
 
-        # if loss_mask is not None:
-        #     noisy_x = noisy_x * loss_mask.unsqueeze(1) + x * (1 - loss_mask.unsqueeze(1)) # add noise to the precition area only
+        # add this to test prediction
+        noisy_x[:,:, :64] = x[:, :, :64]
+
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)
         residual = noise - pred_noise
+        # add this to test prediction
+        residual = residual[:, :, 64:]
+
         loss_dict["noise_loss"] = (residual ** 2).mean()
-
-        # if loss_mask is None: # when we just do generation
-        #     loss_dict["noise_loss"] = (residual ** 2).mean()
-        # else: # when we are doing prediction or imputation
-        #     mask = loss_mask.unsqueeze(1)  # (B,1,T)
-        #     loss_dict["noise_loss"] = ((residual ** 2) * mask).sum() / mask.sum()
-
         all_loss = torch.zeros_like(loss_dict["noise_loss"])
         for k in loss_dict.keys():
             all_loss += loss_dict[k]

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 from models.diffusion.causal_verbalts import CausalVerbalTS
-from models.diffusion.DiT import DiTModel
 from samplers import CausalDDPMSampler, DDIMSampler
 import numpy as np
 import time

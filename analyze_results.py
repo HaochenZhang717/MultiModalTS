@@ -264,7 +264,7 @@ def calculate_all_scores(results_path, block_id):
 
         # predictive_score = predictive_score_metrics(real, fake, device)
         # # print(f"Predictive Score Metrics: {predictive_score}")
-        # disc_score_list.append(discriminative_score)
+        disc_score_list.append(discriminative_score)
         # pred_score_list.append(predictive_score)
 
     disc_score_arr = np.array(disc_score_list)

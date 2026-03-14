@@ -320,7 +320,7 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 if __name__ == "__main__":
 
     # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
-    calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313/0/samples.pth")
+    calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_short_generation/0/samples.pth")
 
 
 

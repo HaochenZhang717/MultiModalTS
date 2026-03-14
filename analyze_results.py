@@ -268,16 +268,16 @@ def calculate_all_scores(results_path, block_id):
         # pred_score_list.append(predictive_score)
 
     disc_score_arr = np.array(disc_score_list)
-    pred_score_arr = np.array(pred_score_list)
+    # pred_score_arr = np.array(pred_score_list)
 
     disc_mean = disc_score_arr.mean()
     disc_std = disc_score_arr.std(ddof=1)  # sample std
 
-    pred_mean = pred_score_arr.mean()
-    pred_std = pred_score_arr.std(ddof=1)
+    # pred_mean = pred_score_arr.mean()
+    # pred_std = pred_score_arr.std(ddof=1)
     print(results_path)
     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
-    print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
+    # print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
     print("---"*50)
     return real
 

@@ -441,9 +441,10 @@ class CausalVerbalTS(nn.Module):
         # attr_emb.shape==torch.Size([512, 64, 1, 47])
         # breakpoint()
         B, _, Nk, Nl = x_in.shape
-        attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
-        attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
+        # attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
         breakpoint()
+        # attr_embed.shape == [512, 64, 1, 56]
+        attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], 1, Nl])
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:

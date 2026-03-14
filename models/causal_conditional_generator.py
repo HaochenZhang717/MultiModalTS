@@ -12,7 +12,7 @@ import yaml
 
 
 
-PREDICT_START = 96
+PREDICT_START = 32
 PREDICT_END = 128
 
 class CausalConditionalGenerator(nn.Module):

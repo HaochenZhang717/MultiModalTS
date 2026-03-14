@@ -52,7 +52,7 @@ class CausalConditionalGenerator(nn.Module):
         x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
         B, _, T = x.shape
 
-        BLOCK_ID = torch.randint(0, 3, (1,)).item()
+        BLOCK_ID = torch.randint(0, 4, (1,)).item()
         PREDICT_START = BLOCK_ID * 32
         PREDICT_END = BLOCK_ID * 32 + 32
 

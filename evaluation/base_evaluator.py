@@ -144,7 +144,7 @@ class BaseEvaluator:
                 start_time = time.time()
 
                 multi_preds = self.model.generate(batch, self.n_samples, sampler)
-                multi_preds = multi_preds.permute(0,1,3,2)
+                # multi_preds = multi_preds.permute(0,1,3,2)
                 pred = multi_preds.median(dim=0).values
 
                 # ts = batch["ts"].to(self.model.device).float()

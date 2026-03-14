@@ -116,6 +116,7 @@ class CausalConditionalGenerator(nn.Module):
                 loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
                 loss_mask = loss_mask.unsqueeze(1) # (B, 1, T)
 
+                breakpoint()
                 x = torch.randn_like(ts)
                 x = x * loss_mask + generated_ts * (1 - loss_mask)
 

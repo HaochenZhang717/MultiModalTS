@@ -44,7 +44,14 @@ class CausalConditionalGenerator(nn.Module):
 
     def forward(self, batch, is_train):
         # x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
-        x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
+        # x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
+        x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        B, _, T = x.shape
+        attn_mask = torch.ones((B, T)).to(x.device)  # (B ,T)
+
+        loss_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
+        loss_mask[:, -32:] = 1
+        text_embed = text_embedding_all_segments[:, -1]
 
         B = x.shape[0]
         if is_train:
@@ -93,53 +100,84 @@ class CausalConditionalGenerator(nn.Module):
         else:
             return self.generate_text(batch, n_samples, sampler)
 
+    # @torch.no_grad()
+    # def generate_text(self, batch, n_samples, sampler="ddim"):
+    #     ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+    #     # text_embedding_all_segments.shape == (B, num_segments, n_vars, embed_dim)
+    #     samples = []
+    #     B, _, T = ts.shape
+    #     num_segments = self.diff_configs['diffusion']["num_segments"]
+    #     assert T % num_segments == 0
+    #     segment_length = T // num_segments
+    #
+    #     for i in range(n_samples):
+    #         generated_ts = torch.randn_like(ts)
+    #         for causal_step in range(num_segments):
+    #             segment_embed = text_embed_all_segments[:, causal_step] # (B, n_vars, embed_dim)
+    #             segment_embed = self.cond_projector(segment_embed)
+    #             # for each causal step, we need to first construct loss_mask and attn_mask,
+    #             attn_mask = torch.zeros_like(ts).sum(1) # (B ,T)
+    #             attn_mask[:, :(causal_step+1)*segment_length] = 1.0
+    #
+    #             loss_mask = torch.zeros_like(ts).sum(1)
+    #             loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
+    #             loss_mask = loss_mask.unsqueeze(1) # (B, 1, T)
+    #
+    #             breakpoint()
+    #             x = torch.randn_like(ts)
+    #             x = x * loss_mask + generated_ts * (1 - loss_mask)
+    #
+    #
+    #             for t in range(self.generator.num_steps-1, -1, -1):
+    #                 noise = torch.randn_like(x)
+    #                 t = (torch.ones(B, device=self.device) * t).long()
+    #
+    #                 pred_noise, _ = self.generator.predict_noise(x, tp, segment_embed, t, attn_mask)
+    #                 if sampler == "ddpm":
+    #                     raise NotImplementedError
+    #                     # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+    #                 else:
+    #                     x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+    #
+    #                 x = x_pred * loss_mask + generated_ts * (1 - loss_mask)
+    #
+    #             generated_ts[:, :, causal_step*segment_length:(causal_step+1)*segment_length] \
+    #                 = x[:, :, causal_step*segment_length:(causal_step+1)*segment_length]
+    #
+    #         samples.append(generated_ts.clone().cpu())
+    #     return torch.stack(samples)
+    #
+
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
+
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-        # text_embedding_all_segments.shape == (B, num_segments, n_vars, embed_dim)
+        text_embed = text_embed_all_segments[:, :-1]
         samples = []
         B, _, T = ts.shape
-        num_segments = self.diff_configs['diffusion']["num_segments"]
-        assert T % num_segments == 0
-        segment_length = T // num_segments
+        attn_mask = torch.ones((B, T)).to(ts.device)  # (B ,T)
+
 
         for i in range(n_samples):
-            generated_ts = torch.randn_like(ts)
-            for causal_step in range(num_segments):
-                segment_embed = text_embed_all_segments[:, causal_step] # (B, n_vars, embed_dim)
-                segment_embed = self.cond_projector(segment_embed)
-                # for each causal step, we need to first construct loss_mask and attn_mask,
-                attn_mask = torch.zeros_like(ts).sum(1) # (B ,T)
-                attn_mask[:, :(causal_step+1)*segment_length] = 1.0
+            x = torch.randn_like(ts)
+            x[:,:,:96] = ts[:,:,:96]
+            attr_emb = self.cond_projector(text_embed)
 
-                loss_mask = torch.zeros_like(ts).sum(1)
-                loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
-                loss_mask = loss_mask.unsqueeze(1) # (B, 1, T)
+            for t in range(self.generator.num_steps-1, -1, -1):
+                noise = torch.randn_like(x)
+                t = (torch.ones(B, device=self.device) * t).long()
+                pred_noise, _ = self.generator.predict_noise(x, tp, attr_emb, t, attn_mask=attn_mask)
+                if sampler == "ddpm":
+                    x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+                else:
+                    x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
 
-                breakpoint()
-                x = torch.randn_like(ts)
-                x = x * loss_mask + generated_ts * (1 - loss_mask)
+                x[:, :, :96] = ts[:, :, :96]
 
-
-                for t in range(self.generator.num_steps-1, -1, -1):
-                    noise = torch.randn_like(x)
-                    t = (torch.ones(B, device=self.device) * t).long()
-
-                    pred_noise, _ = self.generator.predict_noise(x, tp, segment_embed, t, attn_mask)
-                    if sampler == "ddpm":
-                        raise NotImplementedError
-                        # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
-                    else:
-                        x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
-
-                    x = x_pred * loss_mask + generated_ts * (1 - loss_mask)
-
-                generated_ts[:, :, causal_step*segment_length:(causal_step+1)*segment_length] \
-                    = x[:, :, causal_step*segment_length:(causal_step+1)*segment_length]
-
-            samples.append(generated_ts.clone().cpu())
+            samples.append(x)
         return torch.stack(samples)
-    
+
+
     def generate_constraint(self, batch, n_samples, sampler="ddim"):
         raise NotImplementedError
         # ts, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)#todo: need to change maybe

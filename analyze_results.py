@@ -246,6 +246,7 @@ def calculate_all_scores(results_path):
     for i in range(10):
         print(i)
         fake = results_dict["sampled_ts"][i]
+        print(f"real: {real.shape}, fake: {fake.shape}")
         breakpoint()
         discriminative_score = discriminative_score_metrics(
             real, fake,

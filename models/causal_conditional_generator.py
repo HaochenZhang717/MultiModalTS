@@ -47,11 +47,15 @@ class CausalConditionalGenerator(nn.Module):
         # x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
         x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
         B, _, T = x.shape
-        attn_mask = torch.ones((B, T)).to(x.device)  # (B ,T)
+
+        # here we test only predict the first block
+        attn_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
+        attn_mask[:, :64] = 1
 
         loss_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
-        loss_mask[:, -32:] = 1
-        text_embed = text_embedding_all_segments[:, -1]
+        loss_mask[:, 32:64] = 1
+
+        text_embed = text_embedding_all_segments[:, 1]
 
         B = x.shape[0]
         if is_train:
@@ -152,15 +156,16 @@ class CausalConditionalGenerator(nn.Module):
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-        text_embed = text_embed_all_segments[:, -1]
+        text_embed = text_embed_all_segments[:, 1]
         samples = []
         B, _, T = ts.shape
-        attn_mask = torch.ones((B, T)).to(ts.device)  # (B ,T)
-
+        # here we test only predict the first block
+        attn_mask = torch.zeros((B, T)).to(ts.device)  # (B ,T)
+        attn_mask[:, :64] = 1
 
         for i in range(n_samples):
             x = torch.randn_like(ts)
-            x[:,:,:96] = ts[:,:,:96]
+            x[:,:,:32] = ts[:,:,:32]
             attr_emb = self.cond_projector(text_embed)
 
             for t in range(self.generator.num_steps-1, -1, -1):
@@ -172,7 +177,7 @@ class CausalConditionalGenerator(nn.Module):
                 else:
                     x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
 
-                x[:, :, :96] = ts[:, :, :96]
+                x[:, :, :32] = ts[:, :, :32]
 
             samples.append(x)
         return torch.stack(samples)

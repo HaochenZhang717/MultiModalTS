@@ -317,7 +317,8 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 
 if __name__ == "__main__":
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_clip_original_text_caps_only/0/samples.pth")
-    calculate_all_scores("/playpen/haochenz/save/synth_u/qwen_my_embeds_v2_0312/0/samples.pth")
+    # calculate_all_scores("/playpen/haochenz/save/synth_u/qwen_my_embeds_v2_0312/0/samples.pth")
+    calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/samples.pth")
     # calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_embedding/0/samples.pth")
     # real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
 

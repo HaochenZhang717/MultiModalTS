@@ -6,7 +6,8 @@ class SideEncoder_Var(nn.Module):
         super().__init__()
         self.configs = configs
         self.device = configs["device"]
-
+        # tp = [0 ~ 24]
+        # [4, 24] -> [128, 24]
         self.num_var = configs["num_var"]
         self.var_emb = nn.Embedding(num_embeddings=self.num_var, embedding_dim=configs["var_emb"]).to(self.device)
         self.var_ids = torch.arange(self.num_var).to(self.device)

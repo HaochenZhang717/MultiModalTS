@@ -30,12 +30,12 @@ class UnConditionalGenerator(nn.Module):
         noisy_x = self.ddpm.forward(x, t, noise)
 
         # add this to test prediction
-        noisy_x[:,:, :64] = x[:, :, :64]
+        # noisy_x[:,:, :64] = x[:, :, :64]
 
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, attr_emb, t)
         residual = noise - pred_noise
         # add this to test prediction
-        residual = residual[:, :, 64:]
+        # residual = residual[:, :, 64:]
 
         loss_dict["noise_loss"] = (residual ** 2).mean()
         all_loss = torch.zeros_like(loss_dict["noise_loss"])

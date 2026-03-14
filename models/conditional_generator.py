@@ -187,6 +187,7 @@ class ConditionalGenerator(nn.Module):
             B, _, T = ts.shape
             tp = torch.arange(T).repeat(B, 1).to(self.device).float()
             attrs_embed = batch['text_embedding_all_segments'].mean(1).to(self.device).float()
+            breakpoint()
             return ts, tp, attrs_embed
 
             # if "text" in self.cond_configs["cond_modal"]:

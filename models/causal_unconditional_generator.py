@@ -28,7 +28,8 @@ class CausalUnConditionalGenerator(nn.Module):
 
         noise_mask = attn_mask - loss_mask.unsqueeze(1)
         noisy_x = self.ddpm.forward(x, t, noise, noise_mask)
-
+        print(noisy_x.shape)
+        breakpoint()
 
         pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)
         residual = noise - pred_noise

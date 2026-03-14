@@ -11,9 +11,8 @@ import random
 import yaml
 
 
-BLOCK_ID = 1
-PREDICT_START = BLOCK_ID * 32
-PREDICT_END = BLOCK_ID * 32 + 32
+
+
 
 class CausalConditionalGenerator(nn.Module):
     def __init__(self, diff_configs, cond_configs):
@@ -53,6 +52,11 @@ class CausalConditionalGenerator(nn.Module):
         x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
         B, _, T = x.shape
 
+        BLOCK_ID = torch.randint(0, 3, (1,)).item()
+        PREDICT_START = BLOCK_ID * 32
+        PREDICT_END = BLOCK_ID * 32 + 32
+
+
         # here we test only predict the first block
         attn_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
         attn_mask[:, :PREDICT_END] = 1
@@ -60,7 +64,7 @@ class CausalConditionalGenerator(nn.Module):
         loss_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
         loss_mask[:, PREDICT_START:PREDICT_END] = 1
 
-        text_embed = text_embedding_all_segments[:, 1]
+        text_embed = text_embedding_all_segments[:, BLOCK_ID]
 
         B = x.shape[0]
         if is_train:
@@ -161,7 +165,7 @@ class CausalConditionalGenerator(nn.Module):
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-        text_embed = text_embed_all_segments[:, 1]
+        text_embed = text_embed_all_segments[:, BLOCK_ID]
         samples = []
         B, _, T = ts.shape
         # here we test only predict the first block

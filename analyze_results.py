@@ -238,8 +238,12 @@ def analyze_unconditional_results():
 
 
 def calculate_all_scores(results_path, block_id):
-    pred_start = block_id * 32
-    pred_end = block_id * 32 + 32
+    if block_id is not None:
+        pred_start = block_id * 32
+        pred_end = block_id * 32 + 32
+    else:
+        pred_start = 0
+        pred_end = 128
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
@@ -321,29 +325,29 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 
 
 if __name__ == "__main__":
-
-    # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
-    # calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_short_generation/0/samples.pth")
-    # calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_prediction/0/samples.pth")
-    # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0314/0/samples.pth")
-    calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block0",
-        block_id=0
-    )
-
-    calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block1",
-        block_id=1
-    )
-
-    calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block2",
-        block_id=2
-    )
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block0",
+    #     block_id=0
+    # )
+    #
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block1",
+    #     block_id=1
+    # )
+    #
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block2",
+    #     block_id=2
+    # )
 
     calculate_all_scores(
         "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block3",
         block_id=3
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+        block_id=None
     )
 
 

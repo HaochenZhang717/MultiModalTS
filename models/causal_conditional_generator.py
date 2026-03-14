@@ -165,7 +165,7 @@ class CausalConditionalGenerator(nn.Module):
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         # BLOCK_ID = torch.randint(0, 3, (1,)).item()
-        BLOCK_ID = 0
+        BLOCK_ID = 1
         PREDICT_START = BLOCK_ID * 32
         PREDICT_END = BLOCK_ID * 32 + 32
 

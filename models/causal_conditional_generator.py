@@ -113,98 +113,90 @@ class CausalConditionalGenerator(nn.Module):
         else:
             return self.generate_text(batch, n_samples, sampler)
 
+
     # @torch.no_grad()
     # def generate_text(self, batch, n_samples, sampler="ddim"):
+    #
+    #     # BLOCK_ID = torch.randint(0, 3, (1,)).item()
+    #     # BLOCK_ID = 3
+    #     # PREDICT_START = BLOCK_ID * 32
+    #     # PREDICT_END = BLOCK_ID * 32 + 32
+    #
     #     ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-    #     # text_embedding_all_segments.shape == (B, num_segments, n_vars, embed_dim)
+    #
     #     samples = []
     #     B, _, T = ts.shape
-    #     num_segments = self.diff_configs['diffusion']["num_segments"]
-    #     assert T % num_segments == 0
-    #     segment_length = T // num_segments
+    #     # here we test only predict the first block
+    #
+    #
     #
     #     for i in range(n_samples):
-    #         generated_ts = torch.randn_like(ts)
-    #         for causal_step in range(num_segments):
-    #             segment_embed = text_embed_all_segments[:, causal_step] # (B, n_vars, embed_dim)
-    #             segment_embed = self.cond_projector(segment_embed)
-    #             # for each causal step, we need to first construct loss_mask and attn_mask,
-    #             attn_mask = torch.zeros_like(ts).sum(1) # (B ,T)
-    #             attn_mask[:, :(causal_step+1)*segment_length] = 1.0
+    #         batch_samples = torch.zeros_like(ts)
+    #         for block_id in range(4):
+    #             predict_start = block_id * 32
+    #             predict_end = block_id * 32 + 32
+    #             attn_mask = torch.zeros((B, T)).to(ts.device)  # (B ,T)
+    #             attn_mask[:, :predict_end] = 1
     #
-    #             loss_mask = torch.zeros_like(ts).sum(1)
-    #             loss_mask[:, causal_step*segment_length:(causal_step+1)*segment_length] = 1.0
-    #             loss_mask = loss_mask.unsqueeze(1) # (B, 1, T)
-    #
-    #             breakpoint()
     #             x = torch.randn_like(ts)
-    #             x = x * loss_mask + generated_ts * (1 - loss_mask)
-    #
+    #             x[:,:,:predict_start] = batch_samples[:,:,:predict_start]
+    #             text_embed = text_embed_all_segments[:, block_id]
+    #             attr_emb = self.cond_projector(text_embed)
     #
     #             for t in range(self.generator.num_steps-1, -1, -1):
     #                 noise = torch.randn_like(x)
     #                 t = (torch.ones(B, device=self.device) * t).long()
-    #
-    #                 pred_noise, _ = self.generator.predict_noise(x, tp, segment_embed, t, attn_mask)
+    #                 pred_noise, _ = self.generator.predict_noise(x, tp, attr_emb, t, attn_mask=attn_mask)
     #                 if sampler == "ddpm":
-    #                     raise NotImplementedError
-    #                     # x_pred = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+    #                     x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
     #                 else:
-    #                     x_pred = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+    #                     x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
     #
-    #                 x = x_pred * loss_mask + generated_ts * (1 - loss_mask)
+    #                 x[:, :, :predict_start] = batch_samples[:, :, :predict_start]
     #
-    #             generated_ts[:, :, causal_step*segment_length:(causal_step+1)*segment_length] \
-    #                 = x[:, :, causal_step*segment_length:(causal_step+1)*segment_length]
+    #             batch_samples[:, :, predict_start:predict_end] = x[:, :, predict_start:predict_end]
     #
-    #         samples.append(generated_ts.clone().cpu())
+    #         samples.append(batch_samples)
     #     return torch.stack(samples)
-    #
+
+
 
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         # BLOCK_ID = torch.randint(0, 3, (1,)).item()
-        # BLOCK_ID = 3
-        # PREDICT_START = BLOCK_ID * 32
-        # PREDICT_END = BLOCK_ID * 32 + 32
+        BLOCK_ID = 0
+        PREDICT_START = BLOCK_ID * 32
+        PREDICT_END = BLOCK_ID * 32 + 32
 
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
-
+        text_embed = text_embed_all_segments[:, BLOCK_ID]
         samples = []
         B, _, T = ts.shape
         # here we test only predict the first block
-
-
+        attn_mask = torch.zeros((B, T)).to(ts.device)  # (B ,T)
+        attn_mask[:, :PREDICT_END] = 1
 
         for i in range(n_samples):
-            batch_samples = torch.zeros_like(ts)
-            for block_id in range(4):
-                predict_start = block_id * 32
-                predict_end = block_id * 32 + 32
-                attn_mask = torch.zeros((B, T)).to(ts.device)  # (B ,T)
-                attn_mask[:, :predict_end] = 1
+            x = torch.randn_like(ts)
+            x[:,:,:PREDICT_START] = ts[:,:,:PREDICT_START]
+            attr_emb = self.cond_projector(text_embed)
 
-                x = torch.randn_like(ts)
-                x[:,:,:predict_start] = batch_samples[:,:,:predict_start]
-                text_embed = text_embed_all_segments[:, block_id]
-                attr_emb = self.cond_projector(text_embed)
+            for t in range(self.generator.num_steps-1, -1, -1):
+                noise = torch.randn_like(x)
+                t = (torch.ones(B, device=self.device) * t).long()
+                pred_noise, _ = self.generator.predict_noise(x, tp, attr_emb, t, attn_mask=attn_mask)
+                if sampler == "ddpm":
+                    x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
+                else:
+                    x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
 
-                for t in range(self.generator.num_steps-1, -1, -1):
-                    noise = torch.randn_like(x)
-                    t = (torch.ones(B, device=self.device) * t).long()
-                    pred_noise, _ = self.generator.predict_noise(x, tp, attr_emb, t, attn_mask=attn_mask)
-                    if sampler == "ddpm":
-                        x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
-                    else:
-                        x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+                x[:, :, :PREDICT_START] = ts[:, :, :PREDICT_START]
 
-                    x[:, :, :predict_start] = batch_samples[:, :, :predict_start]
-
-                batch_samples[:, :, predict_start:predict_end] = x[:, :, predict_start:predict_end]
-
-            samples.append(batch_samples)
+            samples.append(x)
         return torch.stack(samples)
+
+
 
 
     def generate_constraint(self, batch, n_samples, sampler="ddim"):

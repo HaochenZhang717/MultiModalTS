@@ -24,7 +24,7 @@ CUDA_VISIBLE_DEVICES=1 python run.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
-    --save_folder ../save/synth_u_non_causal/0313_prediction \
+    --save_folder ../save/synth_u_non_causal/0313_short_generation \
     --model_diff_config_path configs/synth_u_non_causal/diff/model_text2ts_dep.yaml \
     --model_cond_config_path configs/synth_u_non_causal/cond/text_msmdiffmv.yaml \
     --train_config_path configs/synth_u_non_causal/train.yaml \

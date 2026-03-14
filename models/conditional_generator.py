@@ -180,6 +180,7 @@ class ConditionalGenerator(nn.Module):
             return ts, tp, attrs, attrs_embed, loss_mask
 
         else:
+            breakpoint()
             loss_mask = None
             ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
             tp = batch["tp"].to(self.device).float()

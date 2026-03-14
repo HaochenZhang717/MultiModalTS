@@ -318,38 +318,20 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 
 
 if __name__ == "__main__":
-    # calculate_all_scores("/playpen/haochenz/save/synth_u/use_clip_original_text_caps_only/0/samples.pth")
-    # calculate_all_scores("/playpen/haochenz/save/synth_u/qwen_my_embeds_v2_0312/0/samples.pth")
-    calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
-    # calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_embedding/0/samples.pth")
-    # real = calculate_all_scores("/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth")
 
-    # calculate_all_scores_two_paths(
-    #     real_path="/playpen/haochenz/synthetic_u/test_ts.npy",
-    #     fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
-    # )
+    # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
 
-    # calculate_all_scores_two_paths(
-    #     real_path="/playpen/haochenz/synthetic_u/valid_ts.npy",
-    #     fake_path="/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/samples.pth"
-    # )
 
-    # calculate_all_scores_two_paths(
-    #     real_path="/playpen/haochenz/synthetic_u/train_ts.npy",
-    #     fake_path="/playpen/haochenz/save/synth_u/qwen_my_embeds_v2/0/samples.pth"
-    # )
-    # calculate_all_scores_given_real(real, "/playpen/haochenz/save/synth_u/use_qwen_my_embedding/0/sampled_ts.pth")
-    # analyze_unconditional_results()
-    # for i in range(5):
-    #     # visualize_sample(
-    #     #     "../../text2ts_from_language_prior_results.pt",
-    #     #     idx=i
-    #     # )
-    #     visualize_sample(
-    #         "../../text2ts_results.pt",
-    #         idx=i
-    #     )
 
-    # calculate_scores_from_real_language(pt_path="/playpen/haochenz/ckpts_ts_generation/DiTDH-S/text2ts_results.pt")
+    all = torch.load('samples.pth', map_location="cpu")
+
+    plt.plot(all['real_ts'][0,0,:32], label='real')
+    # plt.plot(all['sampled_ts'][0,0,:32,0], label='fake')
+    plt.show()
+
+
+
+
+
 
 

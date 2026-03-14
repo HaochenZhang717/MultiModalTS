@@ -184,11 +184,12 @@ class ConditionalGenerator(nn.Module):
 
         else:
             ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
-            ts = ts[:, :, :32]
+            # ts = ts[:, :, :32]
             B, _, T = ts.shape
             tp = torch.arange(T).repeat(B, 1).to(self.device).float()
             # attrs_embed = batch['text_embedding_all_segments'].mean(1).to(self.device).float()
-            attrs_embed = batch['text_embedding_all_segments'][:,0].to(self.device).float()
+            attrs_embed = batch['text_embedding_all_segments'][:,-1].to(self.device).float()
+            # attrs_embed = batch['text_embedding_all_segments'][:,0].to(self.device).float()
             # breakpoint()
             return ts, tp, attrs_embed
 
@@ -245,6 +246,8 @@ class ConditionalGenerator(nn.Module):
 
         for i in range(n_samples):
             x = torch.randn_like(ts)
+            # add this to do prediction test
+            x[:,:,:96] = ts[:,:,:96]
             # if loss_mask is not None:
             #     x = x * loss_mask + ts * (1 - loss_mask)
 
@@ -271,6 +274,9 @@ class ConditionalGenerator(nn.Module):
                     x = self.generator.ddpm.reverse(x, pred_noise, t, noise)
                 else:
                     x = self.generator.ddim.reverse(x, pred_noise, t, noise, is_determin=True)
+
+                # add this to do prediction test
+                x[:, :, :96] = ts[:, :, :96]
 
                 # clamp observed region
                 # if loss_mask is not None:

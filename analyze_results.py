@@ -240,12 +240,12 @@ def analyze_unconditional_results():
 def calculate_all_scores(results_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
-    real = results_dict["real_ts"][:,:,:32]
+    real = results_dict["real_ts"][:,:,-32:]
     disc_score_list = []
     pred_score_list = []
     for i in range(10):
         print(i)
-        fake = results_dict["sampled_ts"][i]
+        fake = results_dict["sampled_ts"][i][:,:,-32:]
         print(f"real: {real.shape}, fake: {fake.shape}")
         # breakpoint()
         discriminative_score = discriminative_score_metrics(
@@ -320,7 +320,8 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 if __name__ == "__main__":
 
     # calculate_all_scores("/playpen/haochenz/save/synth_u_causal/0312/0/samples.pth")
-    calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_short_generation/0/samples.pth")
+    # calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_short_generation/0/samples.pth")
+    calculate_all_scores("/playpen/haochenz/save/synth_u_non_causal/0313_prediction/0/samples.pth")
 
 
 

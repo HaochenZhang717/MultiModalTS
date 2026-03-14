@@ -164,6 +164,11 @@ class CausalConditionalGenerator(nn.Module):
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
+        # BLOCK_ID = torch.randint(0, 3, (1,)).item()
+        BLOCK_ID = 0
+        PREDICT_START = BLOCK_ID * 32
+        PREDICT_END = BLOCK_ID * 32 + 32
+
         ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
         text_embed = text_embed_all_segments[:, BLOCK_ID]
         samples = []

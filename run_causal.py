@@ -81,8 +81,8 @@ def _evaluate_cond_gen(evaluator, output_folder, sampler="ddim", n_sample=10):
         #     print(v.shape)
         #     print("-" * 50)
     # breakpoint()
-    torch.save(result_ts_dict, os.path.join(output_folder, "samples.pth"))
-    print("Samples saved in {}".format(os.path.join(output_folder, "samples.pth")))
+    torch.save(result_ts_dict, os.path.join(output_folder, args.samples_name))
+    print("Samples saved in {}".format(os.path.join(output_folder, args.samples_name)))
     info = {
         "mode": "cond_gen",
         "sampler": sampler,
@@ -135,6 +135,7 @@ parser.add_argument("--epochs", type=int, default=200)
 
 parser.add_argument("--guide_w", type=float, default=1.0)
 parser.add_argument("--only_evaluate", type=bool, default=False)
+parser.add_argument("--samples_name", type=str, required=True)
 
 
 # extra parameters

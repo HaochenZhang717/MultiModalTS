@@ -11,9 +11,9 @@ import random
 import yaml
 
 
-
-PREDICT_START = 64
-PREDICT_END = 96
+BLOCK_ID = 1
+PREDICT_START = BLOCK_ID * 32
+PREDICT_END = BLOCK_ID * 32 + 32
 
 class CausalConditionalGenerator(nn.Module):
     def __init__(self, diff_configs, cond_configs):

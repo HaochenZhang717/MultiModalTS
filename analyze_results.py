@@ -250,17 +250,17 @@ def calculate_all_scores(results_path, block_id):
     real = results_dict["real_ts"][:,:,pred_start:pred_end]
     disc_score_list = []
     pred_score_list = []
-    for i in range(1):
+    for i in range(10):
         # print(i)
         fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
-        print(f"real: {real.shape}, fake: {fake.shape}")
+        # print(f"real: {real.shape}, fake: {fake.shape}")
         # breakpoint()
         discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,
         )
-        print(f"Discriminative Score Metrics: {discriminative_score}")
+        # print(f"Discriminative Score Metrics: {discriminative_score}")
 
         # predictive_score = predictive_score_metrics(real, fake, device)
         # # print(f"Predictive Score Metrics: {predictive_score}")
@@ -345,10 +345,10 @@ if __name__ == "__main__":
         block_id=3
     )
 
-    calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
-        block_id=None
-    )
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+    #     block_id=None
+    # )
 
     calculate_all_scores(
         "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",

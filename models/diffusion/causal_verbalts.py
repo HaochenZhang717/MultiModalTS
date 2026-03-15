@@ -385,7 +385,6 @@ class CausalVerbalTS(nn.Module):
             print(f"x.shape = {x.shape}")
             patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
             attr_emb_list.append(attr_emb_raw.repeat_interleave(32//patch_length, dim=-1))
-            breakpoint()
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)
             side_list.append(side_emb)
@@ -395,45 +394,12 @@ class CausalVerbalTS(nn.Module):
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
         attr_emb = torch.cat(attr_emb_list, dim=-1)
+        print(f"x_in.shape = {x_in.shape}")
+        print(f"side_in.shape = {side_in.shape}")
+        print(f"attr_emb.shape = {attr_emb.shape}")
+        breakpoint()
 
-        # if attr_emb_raw is None:
-        #     attr_emb = torch.zeros_like(x_in)
-        # else:
-        #     if "text_projector" in self.config or "aireadi_projector" in self.config:
-        #
-        #         if "text_projector" in self.config:
-        #             projector_cfg = self.config["text_projector"]
-        #         else:
-        #             projector_cfg = self.config["aireadi_projector"]
-        #
-        #
-        #         if "scale" in projector_cfg:
-        #             assert len(scale_length) == attr_emb_raw.shape[2]
-        #             mscale_attr_list = []
-        #             for i in range(len(scale_length)):
-        #                 tmp_scale_attr = attr_emb_raw[:,:,i:i+1,:].expand([-1, -1, scale_length[i], -1])
-        #                 mscale_attr_list.append(tmp_scale_attr)
-        #             attr_emb = torch.cat(mscale_attr_list, dim=2)
-        #             attr_emb = attr_emb.permute(0, 3, 1, 2)
-        #         else:
-        #             raise ValueError
-        #     else:
-        #         # print("attr_emb_raw.shape", attr_emb_raw.shape) # 512 64
-        #         B, _, Nk, Nl = x_in.shape
-        #         # print(f"Nk: {Nk}, Nl: {Nl}")
-        #         # breakpoint()
-        #         attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], Nk, Nl])
-
-
-        # print("attr_emb.shape", attr_emb.shape)
-        # attr_emb.shape==torch.Size([512, 64, 1, 47])
-        # breakpoint()
         B, _, Nk, Nl = x_in.shape
-        # attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
-        # attr_emb_raw.shape == torch.Size([512,4, 1, 64])
-
-        # breakpoint()
-        # attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
 
         _x_in = x_in
         skip = []

@@ -304,7 +304,7 @@ def calculate_all_scores(results_path, block_id):
 
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
     real = results_dict["real_ts"][:, :, pred_start:pred_end]
-
+    print(f"real shape: {real.shape}")
     # ----------------------------
     # load MOMENT once
     # ----------------------------

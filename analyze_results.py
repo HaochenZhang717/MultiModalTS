@@ -325,7 +325,7 @@ def calculate_all_scores(results_path, block_id):
     for i in range(10):
         fake = results_dict["sampled_ts"][i][:, :, pred_start:pred_end]
 
-        discriminative_score = moment_discriminative_score_metrics(
+        discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,

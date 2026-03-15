@@ -7,7 +7,7 @@ import numpy as np
 import time
 import random
 
-class CausalUnConditionalGenerator(nn.Module):
+class UnConditionalPredictor(nn.Module):
     def __init__(self, configs):
         super().__init__()
         self.device = configs["device"]
@@ -18,29 +18,19 @@ class CausalUnConditionalGenerator(nn.Module):
         configs["device"] = self.device
         self.diff_model = CausalVerbalTS(configs, inputdim=1).to(self.device)
 
-        # self.diff_model = DiTModel(configs).to(self.device)
         self.num_steps = configs["num_steps"]
         self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
         self.ddim = DDIMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
     
-    def _noise_estimation_loss(self, x, tp, text_embed, t, loss_mask, attn_mask):
+    def _noise_estimation_loss(self, x, tp, text_embed, t, prefix_length):
         noise = torch.randn_like(x)
-
-        # noise_mask = (attn_mask - loss_mask).unsqueeze(1)
-
         noisy_x = self.ddpm.forward(x, t, noise)
-        use_prefix = (attn_mask - loss_mask).unsqueeze(1)
-        noisy_x = noisy_x * (1 - use_prefix) + x * use_prefix
-        # prefix_length = attn_mask.sum(-1) - loss_mask.sum(-1)
-        # breakpoint()
-        # noisy_x[:, :, :96] = x[:, :, :96]
+        noisy_x[:, :, :prefix_length] = x[:, :, :prefix_length]
 
-        pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)
+        pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t)
         residual = noise - pred_noise
-
-        mask = loss_mask.unsqueeze(1)  # (B,1,T)
-        loss_dict["noise_loss"] = ((residual ** 2) * mask).sum() / mask.sum()
-
+        residual = residual[:, :, prefix_length:]
+        loss_dict["noise_loss"] = (residual ** 2).mean()
         all_loss = torch.zeros_like(loss_dict["noise_loss"])
         for k in loss_dict.keys():
             all_loss += loss_dict[k]
@@ -103,7 +93,7 @@ class CausalUnConditionalGenerator(nn.Module):
         #     samples.append(x)
         # return torch.stack(samples)
 
-    def predict_noise(self, xt, tp, text_embed, t, attn_mask):
+    def predict_noise(self, xt, tp, text_embed, t, ):
         noisy_x = torch.unsqueeze(xt, 1)
-        pred_noise, loss_dict = self.diff_model(noisy_x, tp, text_embed, t, attn_mask)
+        pred_noise, loss_dict = self.diff_model(noisy_x, tp, text_embed, t)
         return pred_noise, loss_dict

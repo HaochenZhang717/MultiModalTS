@@ -22,6 +22,7 @@ CUDA_VISIBLE_DEVICES=7 python run_causal.py \
     --clip_cache_path "" \
     --n_runs 1
 
+
 CUDA_VISIBLE_DEVICES=7 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \

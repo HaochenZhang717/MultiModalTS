@@ -374,40 +374,21 @@ class CausalVerbalTS(nn.Module):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
-        # print(f"side_emb_raw: {side_emb_raw.shape}") # [bs, 128, 1, 128]
-        # print(f"diffusion_emb: {diffusion_emb.shape}")
-        # print(f"x_raw: {x_raw.shape}") #[bs, 1, c, 128]
-        # breakpoint()
+
         x_list = []
         side_list = []
         scale_length = []
-        # attn_mask_list = []
         for i in range(self.multipatch_num):
             x = self.ts_downsample[i](x_raw)
+            print(f"x.shape = {x.shape}")
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
-            # attn_mask_list.append(downsample_attn_mask(attn_mask, self.config["base_patch"]*self.config["L_patch_len"]**i))
-            # print(f"{i}-th elemebt in x_list: {x.shape}")
-            # print(f"{i}-th elemebt in side_list: {side_emb.shape}")
-            # print(f"{i}-th elemebt in attn_mask: {attn_mask_list[-1].shape}")
 
-        # if self.attention_mask_type == "full" or attr_emb_raw is None:
-        #     attention_mask = None
-        # elif self.attention_mask_type == "parallel":
-        #     attention_mask = self.get_mask(0, [x_list[i].shape[-1] for i in range(len(x_list))], device=x_raw.device)
-        
+
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
-        # patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
-        # patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
-        # patch_attn_mask = patch_attn_mask.unsqueeze(1)
-        # breakpoint()
-        # print(f"x_in: {x_in.shape}")
-        # print(f"side_in: {side_in.shape}")
-        # print(f"patch_attn_mask: {patch_attn_mask.shape}")
-        # breakpoint()
 
 
         # if attr_emb_raw is None:
@@ -447,15 +428,11 @@ class CausalVerbalTS(nn.Module):
         # attr_emb_raw.shape == torch.Size([512, 1, 64])
         breakpoint()
         attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
-        # attr_embed.shape == [512, 64, 1, 56]
-        # print(f"attr_emb.shape={attr_emb.shape}")
-        # breakpoint()
-        # attr_emb = attr_emb_raw[:, :, None, None].expand([attr_emb_raw.shape[0], attr_emb_raw.shape[1], 1, Nl])
+
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:
             x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=attn_mask, condition_type=self.config["condition_type"])
-            # x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=None, condition_type=self.config["condition_type"])
             skip.append(skip_connection)
 
         x = torch.sum(torch.stack(skip), dim=0) / math.sqrt(len(self.residual_layers))

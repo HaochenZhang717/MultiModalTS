@@ -834,7 +834,7 @@ class CausalSampleSplit(Dataset):
             self.T = seq_len,
             self.C = num_channels,
 
-        if not self.text_embed.endswith('.pt'):
+        if not text_embed_path.endswith('.pt'):
             self.text_embed = torch.load(f"{text_embed_path}/{split}_embeds.pt", map_location="cpu")
         else:
             self.text_embed = torch.load(text_embed_path, map_location="cpu")

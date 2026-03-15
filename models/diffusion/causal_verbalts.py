@@ -384,7 +384,7 @@ class CausalVerbalTS(nn.Module):
             x = self.ts_downsample[i](x_raw)
             print(f"x.shape = {x.shape}")
             patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
-            attr_emb_list.append(attr_emb_raw.repeat_interleave(1,1,1,32//patch_length))
+            attr_emb_list.append(attr_emb_raw.repeat_interleave(32//patch_length, dim=-1))
             breakpoint()
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)

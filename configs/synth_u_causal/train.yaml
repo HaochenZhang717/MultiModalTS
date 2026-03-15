@@ -1,8 +1,8 @@
 ### Dataset ###
 data:
   name: causal_sample
-  ts_path: /playpen/haochenz/LitsDatasets/128_len_ts/synthetic_u
-  text_embed_path: /playpen/haochenz/LitsDatasets/128_len_caps_one_per_channel_0309/synth_u/
+  ts_path: /playpen-shared/haochenz/LitsDatasets/128_len_ts/synthetic_u
+  text_embed_path: /playpen-shared/haochenz/LitsDatasets/128_len_caps_one_per_channel_0309/synth_u/
   num_segments: 4
 
 

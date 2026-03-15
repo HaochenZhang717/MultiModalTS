@@ -115,6 +115,7 @@ def discriminative_score_metrics(ori_data, generated_data, input_size, device,):
 
         def forward(self, x):
             _, last_hidden_state = self.rnn(x)
+            breakpoint()
             y_hat_logit = self.linear(last_hidden_state)
             y_hat = nn.functional.sigmoid(y_hat_logit)
             return y_hat_logit, y_hat

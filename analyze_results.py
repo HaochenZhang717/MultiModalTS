@@ -255,11 +255,18 @@ def calculate_all_scores(results_path, block_id):
         fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
         # print(f"real: {real.shape}, fake: {fake.shape}")
         # breakpoint()
-        discriminative_score = moment_discriminative_score_metrics(
+        # discriminative_score = moment_discriminative_score_metrics(
+        #     real, fake,
+        #     real.shape[-1],
+        #     device,
+        # )
+
+        discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,
         )
+
         # print(f"Discriminative Score Metrics: {discriminative_score}")
 
         # predictive_score = predictive_score_metrics(real, fake, device)

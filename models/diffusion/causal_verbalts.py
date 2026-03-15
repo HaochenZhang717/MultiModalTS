@@ -9,7 +9,7 @@ from models.encoders.side_encoder import SideEncoder_Var
 from timm.models.vision_transformer import Mlp
 
 
-class NormAttention(nn.Module):
+class NormCausalAttention(nn.Module):
     """
     Attention module of LightningDiT.
     """
@@ -50,7 +50,7 @@ class NormAttention(nn.Module):
         x = F.scaled_dot_product_attention(
             q, k, v,
             dropout_p=self.attn_drop.p if self.training else 0.,
-            attn_mask=attn_mask)
+            is_causal=True)
         x = x.transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -91,7 +91,7 @@ class EncoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(hidden_size, elementwise_affine=False, eps=1e-6)
 
         # Initialize attention layer
-        self.attn = NormAttention(hidden_size, num_heads=num_heads)
+        self.attn = NormCausalAttention(hidden_size, num_heads=num_heads)
 
         # Initialize MLP layer
         mlp_hidden_dim = int(hidden_size * mlp_ratio)
@@ -177,22 +177,6 @@ class TsPatchEmbedding(nn.Module):
         x = x.permute(0, 3, 1, 2).contiguous()
         return x
 
-
-def downsample_attn_mask(attn_mask, L_patch_len):
-    """
-    Downsample time-level attention mask to patch-level mask.
-    Args:
-        attn_mask: (B, L) tensor
-        L_patch_len: patch length
-
-    Returns:
-        patch_mask: (B, N_patch)
-    """
-    B, L = attn_mask.shape
-    assert L % L_patch_len == 0
-    patch_mask = attn_mask.unfold(dimension=1, size=L_patch_len, step=L_patch_len)
-    assert torch.all(patch_mask == patch_mask[:,:,0].unsqueeze(-1))
-    return patch_mask[:, :, 0]
 
 class SidePatchEmbedding(nn.Module):
     def __init__(self, L_patch_len, channels, d_model, dropout):
@@ -330,6 +314,7 @@ class ResidualBlock(nn.Module):
         skip = skip.reshape(base_shape)
         return (x + residual) / math.sqrt(2.0), skip
 
+
 class CausalVerbalTS(nn.Module):
     def __init__(self, config, inputdim=1):
         super().__init__()
@@ -356,6 +341,20 @@ class CausalVerbalTS(nn.Module):
             self.ts_downsample.append(TsPatchEmbedding(L_patch_len=config["base_patch"]*config["L_patch_len"]**i, channels=inputdim, d_model=self.channels, dropout=0))
             self.patch_decoder.append(PatchDecoder(L_patch_len=config["base_patch"]*config["L_patch_len"]**i, d_model=self.channels, channels=1))
             self.side_downsample.append(SidePatchEmbedding(L_patch_len=config["base_patch"]*config["L_patch_len"]**i, channels=side_dim, d_model=side_dim, dropout=0))
+
+
+        # patch_lengths = []
+        # for i in range(self.multipatch_num):
+        #     patch_len = self.config["base_patch"] * self.config["L_patch_len"] ** i
+        #     n_patch = x_list[i].shape[-1]
+        #     patch_lengths.extend([patch_len] * n_patch)
+        #
+        # patch_mask = build_patch_attention_mask(attn_mask, patch_lengths)
+
+        self.attn_mask_initialized = False
+
+
+
         self.multipatch_mixer = nn.Linear(self.multipatch_num, 1)
         self.residual_layers = nn.ModuleList(
             [
@@ -380,16 +379,16 @@ class CausalVerbalTS(nn.Module):
         side_list = []
         scale_length = []
         attr_emb_list = []
-        for i in range(self.multipatch_num):
+        for i in reversed(range(self.multipatch_num)):
             x = self.ts_downsample[i](x_raw)
-            print(f"x.shape = {x.shape}")
-            patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
-            attr_emb_list.append(attr_emb_raw.repeat_interleave(32//patch_length, dim=-1))
             side_emb = self.side_downsample[i](side_emb_raw)
+            print(f"x.shape = {x.shape}")
+
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
-
+            patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
+            attr_emb_list.append(attr_emb_raw.repeat_interleave(32//patch_length, dim=-1))
 
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
@@ -445,3 +444,8 @@ class CausalVerbalTS(nn.Module):
             mask[start_id:start_id+len_list[i], start_id:start_id+len_list[i]] = 0
             start_id += len_list[i]
         return mask
+
+
+
+if __name__ == "__main__":
+    test_patch_attention_mask()

@@ -2,7 +2,7 @@ export HF_HOME=/playpen/haochenz/hf_cache
 export USE_CAUSAL="true"
 
 
-CUDA_VISIBLE_DEVICES=1 python run_causal.py \
+CUDA_VISIBLE_DEVICES=7 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=1 python run_causal.py \
     --clip_cache_path "" \
     --n_runs 1
 
-CUDA_VISIBLE_DEVICES=1 python run_causal.py \
+CUDA_VISIBLE_DEVICES=7 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
@@ -43,7 +43,7 @@ CUDA_VISIBLE_DEVICES=1 python run_causal.py \
     --n_runs 1
 
 
-CUDA_VISIBLE_DEVICES=1 python run_causal.py \
+CUDA_VISIBLE_DEVICES=7 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \

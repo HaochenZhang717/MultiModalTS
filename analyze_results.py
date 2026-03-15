@@ -308,19 +308,19 @@ def calculate_all_scores(results_path, block_id):
     # ----------------------------
     # load MOMENT once
     # ----------------------------
-    moment_model = MOMENTPipeline.from_pretrained(
-        "AutonLab/MOMENT-1-large",
-        model_kwargs={"task_name": "embedding"},
-    )
-    moment_model.init()
-    moment_model = moment_model.to(device)
-    moment_model.eval()
+    # moment_model = MOMENTPipeline.from_pretrained(
+    #     "AutonLab/MOMENT-1-large",
+    #     model_kwargs={"task_name": "embedding"},
+    # )
+    # moment_model.init()
+    # moment_model = moment_model.to(device)
+    # moment_model.eval()
 
     disc_score_list = []
     fid_score_list = []
 
     # real embedding can be computed once
-    real_emb = _moment_embed(moment_model, real, device)
+    # real_emb = _moment_embed(moment_model, real, device)
 
     for i in range(10):
         fake = results_dict["sampled_ts"][i][:, :, pred_start:pred_end]
@@ -332,22 +332,22 @@ def calculate_all_scores(results_path, block_id):
         )
         disc_score_list.append(discriminative_score)
 
-        fake_emb = _moment_embed(moment_model, fake, device)
-        fid_score = _calculate_fid_from_embeddings(real_emb, fake_emb)
-        fid_score_list.append(fid_score)
+        # fake_emb = _moment_embed(moment_model, fake, device)
+        # fid_score = _calculate_fid_from_embeddings(real_emb, fake_emb)
+        # fid_score_list.append(fid_score)
 
     disc_score_arr = np.array(disc_score_list)
-    fid_score_arr = np.array(fid_score_list)
+    # fid_score_arr = np.array(fid_score_list)
 
     disc_mean = disc_score_arr.mean()
     disc_std = disc_score_arr.std(ddof=1)
 
-    fid_mean = fid_score_arr.mean()
-    fid_std = fid_score_arr.std(ddof=1)
+    # fid_mean = fid_score_arr.mean()
+    # fid_std = fid_score_arr.std(ddof=1)
 
     print(results_path)
     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
-    print(f"MOMENT-FID: mean = {fid_mean:.4f}, std = {fid_std:.4f}")
+    # print(f"MOMENT-FID: mean = {fid_mean:.4f}, std = {fid_std:.4f}")
     print("---" * 50)
 
     return real
@@ -502,17 +502,18 @@ if __name__ == "__main__":
     #     "/playpen/haochenz/save/causal_correct/istanbul_traffic/0/samples.pt",
     #     block_id=None
     # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
-    #     block_id=None
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
-    #     block_id=None
-    # )
-    #
+
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
+        block_id=None
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
+        block_id=None
+    )
+
     # calculate_all_scores(
     #     "/playpen/haochenz/save/non_causal_correct/istanbul_traffic/0/samples.pt",
     #     block_id=None

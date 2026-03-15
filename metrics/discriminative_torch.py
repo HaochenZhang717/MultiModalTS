@@ -3,6 +3,96 @@ import numpy as np
 import torch.nn as nn
 from sklearn.metrics import accuracy_score
 
+from momentfm import MOMENTPipeline
+
+
+
+
+def moment_discriminative_score_metrics(ori_data, generated_data, input_size, device,):
+    # Basic Parameters
+    ori_data, generated_data = torch.Tensor(ori_data), torch.Tensor(generated_data)
+    ## Builde a post-hoc RNN discriminator network
+    # Network parameters
+    hidden_dim = max(int(input_size / 2), 32)
+    iterations = 2000
+    batch_size = 32
+
+    class Discriminator(nn.Module):
+        def __init__(self):
+            super(Discriminator, self).__init__()
+            self.backbone = MOMENTPipeline.from_pretrained(
+                "AutonLab/MOMENT-1-large",
+                model_kwargs={"task_name": "embedding"},
+            )
+            self.backbone.init()
+
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+
+            self.head = nn.Linear(
+                self.backbone.encoder.block[-1].layer[-1].DenseReluDense.wo.out_features,
+                1
+            )
+
+        def forward(self, x):
+            out = self.backbone(x_enc=x, reduction="none").embeddings
+            out = out.mean(dim=(1, 2))
+            y_hat_logit = self.head(out)
+            y_hat = nn.functional.sigmoid(y_hat_logit)
+            return y_hat_logit, y_hat
+
+    model = Discriminator(input_size, hidden_dim).to(device)
+    optimizer = torch.optim.Adam(model.parameters())
+
+    train_x, train_x_hat, test_x, test_x_hat = train_test_divide(ori_data, generated_data)
+
+    train_loss = 0.0
+
+    model.train()
+    # Training step
+    for itt in range(iterations):
+        # Batch setting
+        X_mb = torch.stack(batch_generator(train_x, batch_size)).to(device)
+        X_hat_mb = torch.stack(batch_generator(train_x_hat, batch_size)).to(device)
+
+        y_logit_real, y_pred_real = model(X_mb.float())
+        y_logit_fake, y_pred_fake = model(X_hat_mb.float())
+
+        real_labels = torch.ones_like(y_logit_real)
+        fake_labels = torch.zeros_like(y_logit_fake)
+
+        d_loss_real = nn.functional.binary_cross_entropy_with_logits(y_logit_real, real_labels).mean()
+        d_loss_fake = nn.functional.binary_cross_entropy_with_logits(y_logit_fake, fake_labels).mean()
+
+        d_loss = d_loss_real + d_loss_fake
+
+        optimizer.zero_grad()
+        d_loss.backward()
+        optimizer.step()
+
+        train_loss += d_loss.cpu().item()
+
+    model.eval()
+    with (torch.no_grad()):
+        test_x = torch.stack(test_x).to(device)
+        test_x_hat = torch.stack(test_x_hat).to(device)
+        _, y_pred_real_curr = model(test_x.float())
+        _, y_pred_fake_curr = model(test_x_hat.float())
+
+        y_pred_real_curr = y_pred_real_curr.detach().cpu().numpy()
+        y_pred_fake_curr = y_pred_fake_curr.detach().cpu().numpy()
+
+        y_pred_final = np.squeeze(np.concatenate((y_pred_real_curr, y_pred_fake_curr), axis=0))
+        y_label_final = np.concatenate(
+            (np.ones([y_pred_real_curr.shape[1], ]), np.zeros([y_pred_fake_curr.shape[1], ])),
+            axis=0)
+
+        # Compute the accuracy
+        acc = accuracy_score(y_label_final, (y_pred_final > 0.5).reshape(-1))
+        discriminative_score = np.abs(0.5 - acc)
+
+    return discriminative_score
+
 
 def discriminative_score_metrics(ori_data, generated_data, input_size, device,):
     # Basic Parameters
@@ -133,4 +223,10 @@ def batch_generator(data, batch_size):
 
     return X_mb
 
+
+
+# if __name__ == "__main__":
+#     model = Discriminator()
+#     ts = torch.randn((4, 1, 128))
+#     model(ts)
 

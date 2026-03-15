@@ -422,7 +422,6 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     pred_score_list = []
     for i in range(10):
         print(i)
-        breakpoint()
         fake = results_dict["sampled_ts"][i][:num_sampels]
         discriminative_score = discriminative_score_metrics(
             real, fake,

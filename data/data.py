@@ -179,6 +179,25 @@ def aireadi_collate_fn(batch):
     return out
 
 
+
+def build_block_causal_mask(seq_len=128, block_size=32):
+
+    num_blocks = seq_len // block_size
+
+    # block level mask
+    block_mask = torch.triu(
+        torch.ones(num_blocks, num_blocks, dtype=torch.bool),
+        diagonal=1
+    )
+
+    # expand to token level
+    token_mask = block_mask.repeat_interleave(block_size, dim=0)\
+                           .repeat_interleave(block_size, dim=1)
+
+    return token_mask
+
+
+
 class CustomDataset:
     def __init__(self, folder, **kwargs):
         super().__init__()
@@ -780,6 +799,7 @@ class CausalSampleDataset:
             split=split,
         )
 
+
 class CausalSampleSplit(Dataset):
 
     def __init__(
@@ -853,6 +873,7 @@ class CausalSampleSplit(Dataset):
             "text_embedding_all_segments": text_embed_all_segments,
             "image_id": image_id,
             "ts_id": ts_id,
+            'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
         }
 
         return item
@@ -865,6 +886,7 @@ class CausalSampleSplit(Dataset):
         out["text_embedding_all_segments"] = torch.stack([b["text_embedding_all_segments"] for b in batch])
         out["image_id"] = [b["image_id"] for b in batch]
         out["ts_id"] = torch.tensor([b["ts_id"] for b in batch])
+        out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])
 
         return out
 

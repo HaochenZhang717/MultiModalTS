@@ -8,6 +8,7 @@ import copy
 from models.encoders.side_encoder import SideEncoder_Var
 from timm.models.vision_transformer import Mlp
 
+
 class NormAttention(nn.Module):
     """
     Attention module of LightningDiT.
@@ -54,6 +55,7 @@ class NormAttention(nn.Module):
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
+
 
 class SwiGLUFFN(nn.Module):
     def __init__(
@@ -379,14 +381,14 @@ class CausalVerbalTS(nn.Module):
         x_list = []
         side_list = []
         scale_length = []
-        attn_mask_list = []
+        # attn_mask_list = []
         for i in range(self.multipatch_num):
             x = self.ts_downsample[i](x_raw)
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
-            attn_mask_list.append(downsample_attn_mask(attn_mask, self.config["base_patch"]*self.config["L_patch_len"]**i))
+            # attn_mask_list.append(downsample_attn_mask(attn_mask, self.config["base_patch"]*self.config["L_patch_len"]**i))
             # print(f"{i}-th elemebt in x_list: {x.shape}")
             # print(f"{i}-th elemebt in side_list: {side_emb.shape}")
             # print(f"{i}-th elemebt in attn_mask: {attn_mask_list[-1].shape}")
@@ -398,9 +400,9 @@ class CausalVerbalTS(nn.Module):
         
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
-        patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
-        patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
-        patch_attn_mask = patch_attn_mask.unsqueeze(1)
+        # patch_attn_mask = torch.cat(attn_mask_list, dim=-1)
+        # patch_attn_mask = patch_attn_mask.unsqueeze(1) * patch_attn_mask.unsqueeze(2)
+        # patch_attn_mask = patch_attn_mask.unsqueeze(1)
         # breakpoint()
         # print(f"x_in: {x_in.shape}")
         # print(f"side_in: {side_in.shape}")
@@ -443,7 +445,7 @@ class CausalVerbalTS(nn.Module):
         B, _, Nk, Nl = x_in.shape
         # attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
         # attr_emb_raw.shape == torch.Size([512, 1, 64])
-
+        breakpoint()
         attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
         # attr_embed.shape == [512, 64, 1, 56]
         # print(f"attr_emb.shape={attr_emb.shape}")
@@ -452,7 +454,7 @@ class CausalVerbalTS(nn.Module):
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:
-            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=patch_attn_mask, condition_type=self.config["condition_type"])
+            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=attn_mask, condition_type=self.config["condition_type"])
             # x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=None, condition_type=self.config["condition_type"])
             skip.append(skip_connection)
 

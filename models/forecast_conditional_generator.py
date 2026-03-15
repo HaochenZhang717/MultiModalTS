@@ -49,10 +49,22 @@ class CausalConditionalGenerator(nn.Module):
     def forward(self, batch, is_train):
         # x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
         # x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
-        x, tp, text_embedding_all_segments, attn_mask = self._unpack_data_cond_gen_for_sample(batch)
+        x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
         B, _, T = x.shape
 
-        text_embed = text_embedding_all_segments
+        BLOCK_ID = torch.randint(0, 4, (1,)).item()
+        PREDICT_START = BLOCK_ID * 32
+        PREDICT_END = BLOCK_ID * 32 + 32
+
+
+        # here we test only predict the first block
+        attn_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
+        attn_mask[:, :PREDICT_END] = 1
+
+        loss_mask = torch.zeros((B, T)).to(x.device)  # (B ,T)
+        loss_mask[:, PREDICT_START:PREDICT_END] = 1
+
+        text_embed = text_embedding_all_segments[:, BLOCK_ID]
 
         B = x.shape[0]
         if is_train:
@@ -60,7 +72,7 @@ class CausalConditionalGenerator(nn.Module):
 
             text_embed = self.cond_projector(text_embed)  # for now we are not using projector.
 
-            loss = self.generator._noise_estimation_loss(x, tp, text_embed, t, attn_mask)
+            loss = self.generator._noise_estimation_loss(x, tp, text_embed, t, loss_mask, attn_mask)
             return loss
         
         loss_dict = {}
@@ -68,7 +80,7 @@ class CausalConditionalGenerator(nn.Module):
         for t in range(self.generator.num_steps):
             t = (torch.ones(B, device=self.device) * t).long()
 
-            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, text_embed, t, attn_mask)
+            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, text_embed, t, loss_mask, attn_mask)
             for k in tmp_loss_dict:
                 if k in loss_dict.keys():
                     loss_dict[k] += tmp_loss_dict[k]
@@ -92,8 +104,7 @@ class CausalConditionalGenerator(nn.Module):
         B, _, T = ts.shape
         tp = torch.arange(T).repeat(B, 1).to(self.device).float()
         text_embedding_all_segments = batch["text_embedding_all_segments"].to(self.device).float()
-        attn_mask = batch["attn_mask"].to(self.device).float()
-        return ts, tp, text_embedding_all_segments, attn_mask
+        return ts, tp, text_embedding_all_segments
 
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":

@@ -39,7 +39,7 @@ class NormCausalAttention(nn.Module):
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
-    def forward(self, x: torch.Tensor, attn_mask=None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, is_causal: bool) -> torch.Tensor:
         B, N, C = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, self.head_dim).permute(2, 0, 3, 1, 4)
         q, k, v = qkv.unbind(0)
@@ -50,7 +50,7 @@ class NormCausalAttention(nn.Module):
         x = F.scaled_dot_product_attention(
             q, k, v,
             dropout_p=self.attn_drop.p if self.training else 0.,
-            is_causal=True)
+            is_causal=is_causal)
         x = x.transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -97,8 +97,8 @@ class EncoderLayer(nn.Module):
         mlp_hidden_dim = int(hidden_size * mlp_ratio)
         self.mlp = SwiGLUFFN(hidden_size, int(2/3 * mlp_hidden_dim), hidden_size)
 
-    def forward(self, x, mask):
-        x = x + self.attn(self.norm1(x), attn_mask=mask)
+    def forward(self, x, is_causal):
+        x = x + self.attn(self.norm1(x), is_causal)
         x = x + self.mlp(self.norm2(x))
         return x
 
@@ -234,26 +234,23 @@ class ResidualBlock(nn.Module):
                 nn.Linear(channels, 3 * channels, bias=True)
             )
 
-    def forward_time(self, y, base_shape, attention_mask=None):
+    def forward_time(self, y, base_shape, is_causal):
         # do attention in time direction
         B, channel, K, L = base_shape # torch.Size([512, 64, 1, 47])
         if L == 1:
             return y
         y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L) # aggregate all time_vars
         y = y.permute(0, 2, 1)
-        # if attention_mask is not None:
-        #     attention_mask = (1 - attention_mask) * float("-inf")
-        #     attention_mask = attention_mask.repeat_interleave(8, dim=0)
-        y = self.time_layer(y, mask=attention_mask).permute(0, 2, 1)
+        y = self.time_layer(y, is_causal).permute(0, 2, 1)
         y = y.reshape(B, K, channel, L).permute(0, 2, 1, 3).reshape(B, channel, K * L)
         return y
 
-    def forward_feature(self, y, base_shape, attention_mask=None):
+    def forward_feature(self, y, base_shape, is_causal):
         B, channel, K, L = base_shape
         if K == 1:
             return y
         y = y.reshape(B, channel, K, L).permute(0, 3, 1, 2).reshape(B * L, channel, K)
-        y = self.feature_layer(y.permute(0, 2, 1), mask=attention_mask).permute(0, 2, 1)
+        y = self.feature_layer(y.permute(0, 2, 1), is_causal).permute(0, 2, 1)
         y = y.reshape(B, L, channel, K).permute(0, 2, 3, 1).reshape(B, channel, K * L)
         return y
     
@@ -270,13 +267,16 @@ class ResidualBlock(nn.Module):
 
     def forward(self, x, side_emb, attr_emb, diffusion_emb, attention_mask=None, condition_type="add"):
     
-        if condition_type == "add":
-            x = x + attr_emb
-        elif condition_type == "cross_attention":
-            x = self.foward_cross_attention(x, attr_emb, attetion_mask=attention_mask)
-        elif condition_type == "adaLN":
-            gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
-            gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
+        # if condition_type == "add":
+        #     x = x + attr_emb
+        # elif condition_type == "cross_attention":
+        #     x = self.foward_cross_attention(x, attr_emb, attetion_mask=attention_mask)
+        # elif condition_type == "adaLN":
+        #     gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
+        #     gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
+
+        gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
+        gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
 
         B, channel, K, L = x.shape
         base_shape = x.shape
@@ -288,8 +288,8 @@ class ResidualBlock(nn.Module):
 
         # y.shape == torch.Size([512, 64, 1, 47])
         # base_shape == torch.Size([512, 64, 1, 47])
-        y = self.forward_time(y, base_shape, attention_mask) # set to attention_mask==None for now.
-        y = self.forward_feature(y, base_shape, None)
+        y = self.forward_time(y, base_shape, is_causal=True) # set to attention_mask==None for now.
+        y = self.forward_feature(y, base_shape, is_causal=False)
 
         if condition_type == "adaLN":
             y = y.reshape(B,channel,K,L)
@@ -369,7 +369,7 @@ class CausalVerbalTS(nn.Module):
             ]
         )
         
-    def forward(self, x_raw, tp, attr_emb_raw, diffusion_step, attn_mask):
+    def forward(self, x_raw, tp, attr_emb_raw, diffusion_step):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
@@ -382,7 +382,7 @@ class CausalVerbalTS(nn.Module):
         for i in reversed(range(self.multipatch_num)):
             x = self.ts_downsample[i](x_raw)
             side_emb = self.side_downsample[i](side_emb_raw)
-            print(f"x.shape = {x.shape}")
+            # print(f"x.shape = {x.shape}")
 
             x_list.append(x)
             side_list.append(side_emb)
@@ -393,17 +393,17 @@ class CausalVerbalTS(nn.Module):
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
         attr_emb = torch.cat(attr_emb_list, dim=-1)
-        print(f"x_in.shape = {x_in.shape}")
-        print(f"side_in.shape = {side_in.shape}")
-        print(f"attr_emb.shape = {attr_emb.shape}")
-        breakpoint()
+        # print(f"x_in.shape = {x_in.shape}")
+        # print(f"side_in.shape = {side_in.shape}")
+        # print(f"attr_emb.shape = {attr_emb.shape}")
+        # breakpoint()
 
         B, _, Nk, Nl = x_in.shape
 
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:
-            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, attention_mask=attn_mask, condition_type=self.config["condition_type"])
+            x_in, skip_connection = layer(x_in+_x_in, side_in, attr_emb, diffusion_emb, condition_type=self.config["condition_type"])
             skip.append(skip_connection)
 
         x = torch.sum(torch.stack(skip), dim=0) / math.sqrt(len(self.residual_layers))
@@ -420,7 +420,7 @@ class CausalVerbalTS(nn.Module):
         for i in range(len(x_list)):
             x_out = x[:,:,:,start_id:start_id+x_list[i].shape[-1]]
             # print(f"x_out.shape = {x_out.shape}")
-            x_out = self.patch_decoder[i](x_out)
+            x_out = self.patch_decoder[len(x_list)-1-i](x_out)
             x_out = x_out[:, :, :, :L]
             all_out.append(x_out)
             start_id += x_list[i].shape[-1]
@@ -446,6 +446,3 @@ class CausalVerbalTS(nn.Module):
         return mask
 
 
-
-if __name__ == "__main__":
-    test_patch_attention_mask()

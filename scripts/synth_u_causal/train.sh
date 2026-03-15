@@ -4,7 +4,7 @@ CUDA_VISIBLE_DEVICES=1 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
-    --save_folder ../save/synth_u_causal/full_train_random_batch_block_debug \
+    --save_folder ../save/synth_u_causal_correct/0314 \
     --samples_name "samples_block3" \
     --model_diff_config_path configs/synth_u_causal/diff/model.yaml \
     --model_cond_config_path configs/synth_u_causal/cond/text_msmdiffmv.yaml \

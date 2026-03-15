@@ -23,10 +23,10 @@ class CausalUnConditionalGenerator(nn.Module):
         self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
         self.ddim = DDIMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)
     
-    def _noise_estimation_loss(self, x, tp, text_embed, t, attn_mask):
+    def _noise_estimation_loss(self, x, tp, text_embed, t):
         noise = torch.randn_like(x)
         noisy_x = self.ddpm.forward(x, t, noise)
-        pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t, attn_mask)
+        pred_noise, loss_dict = self.predict_noise(noisy_x, tp, text_embed, t)
         residual = noise - pred_noise
         loss_dict["noise_loss"] = (residual ** 2).mean()
         all_loss = torch.zeros_like(loss_dict["noise_loss"])
@@ -91,7 +91,7 @@ class CausalUnConditionalGenerator(nn.Module):
         #     samples.append(x)
         # return torch.stack(samples)
 
-    def predict_noise(self, xt, tp, text_embed, t, attn_mask):
+    def predict_noise(self, xt, tp, text_embed, t):
         noisy_x = torch.unsqueeze(xt, 1)
-        pred_noise, loss_dict = self.diff_model(noisy_x, tp, text_embed, t, attn_mask)
+        pred_noise, loss_dict = self.diff_model(noisy_x, tp, text_embed, t)
         return pred_noise, loss_dict

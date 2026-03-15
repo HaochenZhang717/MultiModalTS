@@ -7,6 +7,7 @@ import numpy as np
 import copy
 from models.encoders.side_encoder import SideEncoder_Var
 from timm.models.vision_transformer import Mlp
+import os
 
 
 class NormCausalAttention(nn.Module):
@@ -241,7 +242,7 @@ class ResidualBlock(nn.Module):
             return y
         y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L) # aggregate all time_vars
         y = y.permute(0, 2, 1)
-        y = self.time_layer(y, is_causal).permute(0, 2, 1)
+        y = self.time_layer(y, is_causal=os.environ["USE_CAUSAL"]=="true").permute(0, 2, 1)
         y = y.reshape(B, K, channel, L).permute(0, 2, 1, 3).reshape(B, channel, K * L)
         return y
 

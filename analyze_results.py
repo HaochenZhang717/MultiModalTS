@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from metrics.discriminative_torch import discriminative_score_metrics, moment_discriminative_score_metrics
 from metrics.predictive_metrics import predictive_score_metrics
+import torch
+import numpy as np
+from scipy.linalg import sqrtm
+from momentfm import MOMENTPipeline
 
 
 # def visualize_sample(pt_path, idx=0):
@@ -237,6 +241,57 @@ from metrics.predictive_metrics import predictive_score_metrics
 #     print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
 
 
+
+def _moment_embed(moment_model, x, device, batch_size=64):
+    """
+    x: torch.Tensor, shape (N, n_var, seq_len)
+    return: np.ndarray, shape (N, dim)
+    """
+    moment_model.eval()
+    emb_list = []
+
+    with torch.no_grad():
+        for start in range(0, x.shape[0], batch_size):
+            batch = x[start:start + batch_size].to(device).float()
+
+            out = moment_model(x_enc=batch, reduction="none").embeddings
+            # out shape: (B, n_var, seq_len, dim)
+            out = out.mean(dim=(1, 2))   # -> (B, dim)
+
+            emb_list.append(out.cpu().numpy())
+
+    return np.concatenate(emb_list, axis=0)
+
+
+def _calculate_fid_from_embeddings(real_emb, fake_emb, eps=1e-6):
+    """
+    real_emb: np.ndarray, shape (N, D)
+    fake_emb: np.ndarray, shape (M, D)
+    """
+    mu_r = np.mean(real_emb, axis=0)
+    mu_f = np.mean(fake_emb, axis=0)
+
+    sigma_r = np.cov(real_emb, rowvar=False)
+    sigma_f = np.cov(fake_emb, rowvar=False)
+
+    if sigma_r.ndim == 0:
+        sigma_r = np.array([[sigma_r]])
+    if sigma_f.ndim == 0:
+        sigma_f = np.array([[sigma_f]])
+
+    sigma_r = sigma_r + eps * np.eye(sigma_r.shape[0])
+    sigma_f = sigma_f + eps * np.eye(sigma_f.shape[0])
+
+    diff = mu_r - mu_f
+    covmean = sqrtm(sigma_r @ sigma_f)
+
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+
+    fid = diff @ diff + np.trace(sigma_r + sigma_f - 2.0 * covmean)
+    return float(fid)
+
+
 def calculate_all_scores(results_path, block_id):
     if block_id is not None:
         pred_start = block_id * 32
@@ -246,47 +301,108 @@ def calculate_all_scores(results_path, block_id):
         pred_end = 128
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
-    real = results_dict["real_ts"][:,:,pred_start:pred_end]
+    real = results_dict["real_ts"][:, :, pred_start:pred_end]
+
+    # ----------------------------
+    # load MOMENT once
+    # ----------------------------
+    moment_model = MOMENTPipeline.from_pretrained(
+        "AutonLab/MOMENT-1-large",
+        model_kwargs={"task_name": "embedding"},
+    )
+    moment_model.init()
+    moment_model = moment_model.to(device)
+    moment_model.eval()
+
     disc_score_list = []
-    pred_score_list = []
-    for i in range(5):
-        # print(i)
-        fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
-        # print(f"real: {real.shape}, fake: {fake.shape}")
-        # breakpoint()
+    fid_score_list = []
+
+    # real embedding can be computed once
+    real_emb = _moment_embed(moment_model, real, device)
+
+    for i in range(10):
+        fake = results_dict["sampled_ts"][i][:, :, pred_start:pred_end]
+
         discriminative_score = moment_discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,
         )
-
-        # discriminative_score = discriminative_score_metrics(
-        #     real, fake,
-        #     real.shape[-1],
-        #     device,
-        # )
-
-        # print(f"Discriminative Score Metrics: {discriminative_score}")
-
-        # predictive_score = predictive_score_metrics(real, fake, device)
-        # # print(f"Predictive Score Metrics: {predictive_score}")
         disc_score_list.append(discriminative_score)
-        # pred_score_list.append(predictive_score)
+
+        fake_emb = _moment_embed(moment_model, fake, device)
+        fid_score = _calculate_fid_from_embeddings(real_emb, fake_emb)
+        fid_score_list.append(fid_score)
 
     disc_score_arr = np.array(disc_score_list)
-    # pred_score_arr = np.array(pred_score_list)
+    fid_score_arr = np.array(fid_score_list)
 
     disc_mean = disc_score_arr.mean()
-    disc_std = disc_score_arr.std(ddof=1)  # sample std
+    disc_std = disc_score_arr.std(ddof=1)
 
-    # pred_mean = pred_score_arr.mean()
-    # pred_std = pred_score_arr.std(ddof=1)
+    fid_mean = fid_score_arr.mean()
+    fid_std = fid_score_arr.std(ddof=1)
+
     print(results_path)
     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
-    # print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
-    print("---"*50)
+    print(f"MOMENT-FID: mean = {fid_mean:.4f}, std = {fid_std:.4f}")
+    print("---" * 50)
+
     return real
+
+
+# def calculate_all_scores(results_path, block_id):
+#     if block_id is not None:
+#         pred_start = block_id * 32
+#         pred_end = block_id * 32 + 32
+#     else:
+#         pred_start = 0
+#         pred_end = 128
+#
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     results_dict = torch.load(results_path, map_location="cpu", weights_only=False)
+#     real = results_dict["real_ts"][:,:,pred_start:pred_end]
+#     disc_score_list = []
+#     pred_score_list = []
+#     for i in range(5):
+#         # print(i)
+#         fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
+#         # print(f"real: {real.shape}, fake: {fake.shape}")
+#         # breakpoint()
+#         discriminative_score = moment_discriminative_score_metrics(
+#             real, fake,
+#             real.shape[-1],
+#             device,
+#         )
+#
+#         # discriminative_score = discriminative_score_metrics(
+#         #     real, fake,
+#         #     real.shape[-1],
+#         #     device,
+#         # )
+#
+#         # print(f"Discriminative Score Metrics: {discriminative_score}")
+#
+#         # predictive_score = predictive_score_metrics(real, fake, device)
+#         # # print(f"Predictive Score Metrics: {predictive_score}")
+#         disc_score_list.append(discriminative_score)
+#         # pred_score_list.append(predictive_score)
+#
+#     disc_score_arr = np.array(disc_score_list)
+#     # pred_score_arr = np.array(pred_score_list)
+#
+#     disc_mean = disc_score_arr.mean()
+#     disc_std = disc_score_arr.std(ddof=1)  # sample std
+#
+#     # pred_mean = pred_score_arr.mean()
+#     # pred_std = pred_score_arr.std(ddof=1)
+#     print(results_path)
+#     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
+#     # print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
+#     print("---"*50)
+#     return real
 
 
 def calculate_all_scores_two_paths(real_path, fake_path):

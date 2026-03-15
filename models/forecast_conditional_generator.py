@@ -14,7 +14,7 @@ import yaml
 
 
 
-class CausalConditionalGenerator(nn.Module):
+class ConditionalPredictor(nn.Module):
     def __init__(self, diff_configs, cond_configs):
         super().__init__()
         self.device = diff_configs["device"] if torch.cuda.is_available() else "cpu"
@@ -47,9 +47,7 @@ class CausalConditionalGenerator(nn.Module):
             print("Learn from scratch")
 
     def forward(self, batch, is_train):
-        # x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
-        # x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
-        x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        x, tp, text_embedding_all_segments = self._unpack_data_cond_gen(batch)
         B, _, T = x.shape
 
         BLOCK_ID = torch.randint(0, 4, (1,)).item()
@@ -91,15 +89,6 @@ class CausalConditionalGenerator(nn.Module):
         return loss_dict
 
     def _unpack_data_cond_gen(self, batch):
-        ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
-        B, _, T  = ts.shape
-        tp = torch.arange(T).repeat(B, 1).to(self.device).float()
-        loss_mask = batch["loss_mask"].to(self.device).float()
-        text_embed = batch["text_embedding"].to(self.device).float()
-        attn_mask = batch["attn_mask"].to(self.device).float()
-        return ts, tp, text_embed, loss_mask, attn_mask
-
-    def _unpack_data_cond_gen_for_sample(self, batch):
         ts = batch["ts"].to(self.device).float()  # batch_size, num_channels, seq_len
         B, _, T = ts.shape
         tp = torch.arange(T).repeat(B, 1).to(self.device).float()
@@ -169,7 +158,7 @@ class CausalConditionalGenerator(nn.Module):
         PREDICT_START = BLOCK_ID * 32
         PREDICT_END = BLOCK_ID * 32 + 32
 
-        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen(batch)
         text_embed = text_embed_all_segments[:, BLOCK_ID]
         samples = []
         B, _, T = ts.shape

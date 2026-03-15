@@ -409,7 +409,7 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # real = np.load(real_path, allow_pickle=True)
-    real_dict = torch.load(fake_path, map_location="cpu", weights_only=False)
+    real_dict = torch.load(real_path, map_location="cpu", weights_only=False)
     real = real_dict["real_ts"]
     # real = torch.from_numpy(real).to(device)
     print(f"real shape = {real.shape}")

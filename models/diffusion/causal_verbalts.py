@@ -374,13 +374,18 @@ class CausalVerbalTS(nn.Module):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
+        attr_emb_raw = attr_emb_raw.permute(0, 3, 2, 1)
 
         x_list = []
         side_list = []
         scale_length = []
+        attr_emb_list = []
         for i in range(self.multipatch_num):
             x = self.ts_downsample[i](x_raw)
             print(f"x.shape = {x.shape}")
+            patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
+            attr_emb_list.append(attr_emb_raw.repeat(1,1,1,32//patch_length))
+            breakpoint()
             side_emb = self.side_downsample[i](side_emb_raw)
             x_list.append(x)
             side_list.append(side_emb)
@@ -425,7 +430,8 @@ class CausalVerbalTS(nn.Module):
         # breakpoint()
         B, _, Nk, Nl = x_in.shape
         # attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
-        # attr_emb_raw.shape == torch.Size([512, 1, 64])
+        # attr_emb_raw.shape == torch.Size([512,4, 1, 64])
+
         breakpoint()
         attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
 

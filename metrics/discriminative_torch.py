@@ -41,7 +41,7 @@ def moment_discriminative_score_metrics(ori_data, generated_data, input_size, de
             y_hat = nn.functional.sigmoid(y_hat_logit)
             return y_hat_logit, y_hat
 
-    model = Discriminator(input_size, hidden_dim).to(device)
+    model = Discriminator().to(device)
     optimizer = torch.optim.Adam(model.parameters())
 
     train_x, train_x_hat, test_x, test_x_hat = train_test_divide(ori_data, generated_data)

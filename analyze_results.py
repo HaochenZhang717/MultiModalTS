@@ -421,18 +421,18 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     disc_score_list = []
     pred_score_list = []
     for i in range(10):
-        print(i)
+        # print(i)
         fake = results_dict["sampled_ts"][i][:num_sampels]
         discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,
         )
-        print(f"Discriminative Score Metrics: {discriminative_score}")
+        # print(f"Discriminative Score Metrics: {discriminative_score}")
 
         # predictive_score = predictive_score_metrics(real, fake, device)
         # print(f"Predictive Score Metrics: {predictive_score}")
-        # disc_score_list.append(discriminative_score)
+        disc_score_list.append(discriminative_score)
         # pred_score_list.append(predictive_score)
 
     disc_score_arr = np.array(disc_score_list)

@@ -873,7 +873,7 @@ class CausalSampleSplit(Dataset):
             "text_embedding_all_segments": text_embed_all_segments,
             "image_id": image_id,
             "ts_id": ts_id,
-            'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
+            # 'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
         }
 
         return item
@@ -886,7 +886,7 @@ class CausalSampleSplit(Dataset):
         out["text_embedding_all_segments"] = torch.stack([b["text_embedding_all_segments"] for b in batch])
         out["image_id"] = [b["image_id"] for b in batch]
         out["ts_id"] = torch.tensor([b["ts_id"] for b in batch])
-        out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])
+        # out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])
 
         return out
 

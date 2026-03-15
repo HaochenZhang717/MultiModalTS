@@ -394,7 +394,7 @@ class CausalVerbalTS(nn.Module):
 
         x_in = torch.cat(x_list, dim=-1)
         side_in = torch.cat(side_list, dim=-1)
-
+        attr_emb = torch.cat(attr_emb_list, dim=-1)
 
         # if attr_emb_raw is None:
         #     attr_emb = torch.zeros_like(x_in)
@@ -432,8 +432,8 @@ class CausalVerbalTS(nn.Module):
         # attr_emb_raw = attr_emb_raw.mean(dim=1) # this is a simple way to do aggregation
         # attr_emb_raw.shape == torch.Size([512,4, 1, 64])
 
-        breakpoint()
-        attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
+        # breakpoint()
+        # attr_emb = attr_emb_raw.unsqueeze(-1).permute(0,2,1,3).expand(-1,-1,-1,Nl)
 
         _x_in = x_in
         skip = []

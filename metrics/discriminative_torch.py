@@ -37,6 +37,7 @@ def moment_discriminative_score_metrics(ori_data, generated_data, input_size, de
         def forward(self, x):
             out = self.backbone(x_enc=x, reduction="none").embeddings
             out = out.mean(dim=1)
+            breakpoint()
             y_hat_logit = self.head(out)
             y_hat = nn.functional.sigmoid(y_hat_logit)
             return y_hat_logit, y_hat

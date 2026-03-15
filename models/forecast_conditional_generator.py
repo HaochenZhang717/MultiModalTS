@@ -67,7 +67,7 @@ class ConditionalPredictor(nn.Module):
 
             attr_embed = self.cond_projector(attr_embed)  # for now we are not using projector.
 
-            loss = self.generator._noise_estimation_loss(x, tp, attr_embed, t)
+            loss = self.generator._noise_estimation_loss(x, tp, attr_embed, t, prefix_length=PREDICT_START)
             return loss
         
         loss_dict = {}
@@ -75,7 +75,7 @@ class ConditionalPredictor(nn.Module):
         for t in range(self.generator.num_steps):
             t = (torch.ones(B, device=self.device) * t).long()
 
-            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, attr_embed, t)
+            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, attr_embed, t, prefix_length=PREDICT_START)
             for k in tmp_loss_dict:
                 if k in loss_dict.keys():
                     loss_dict[k] += tmp_loss_dict[k]

@@ -12,10 +12,10 @@ python run_forecast.py \
     --data_folder "none" \
     --clip_folder "" \
     --multipatch_num 3 \
-    --L_patch_len 3 \
+    --L_patch_len 2 \
     --base_patch 4 \
     --epochs 700 \
-    --batch_size 256 \
+    --batch_size 512 \
     --clip_cache_path ""
 
 

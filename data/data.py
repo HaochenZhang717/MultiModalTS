@@ -839,7 +839,7 @@ class CausalSampleSplit(Dataset):
         else:
             self.text_embed = torch.load(text_embed_path, map_location="cpu")
 
-        breakpoint()
+
         assert self.T % self.num_segments == 0
 
         self.segment_length = self.T // self.num_segments

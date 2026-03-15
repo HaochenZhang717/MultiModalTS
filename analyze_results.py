@@ -250,7 +250,7 @@ def calculate_all_scores(results_path, block_id):
     real = results_dict["real_ts"][:,:,pred_start:pred_end]
     disc_score_list = []
     pred_score_list = []
-    for i in range(10):
+    for i in range(5):
         # print(i)
         fake = results_dict["sampled_ts"][i][:,:,pred_start:pred_end]
         # print(f"real: {real.shape}, fake: {fake.shape}")

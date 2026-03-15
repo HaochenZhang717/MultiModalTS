@@ -781,31 +781,38 @@ class CausalSampleDataset:
     def __init__(
         self,
         ts_path,
+        seq_len,
         text_embed_path,
+        num_channels,
         num_segments=4,
         **kwargs
     ):
         self.ts_path = ts_path
+        self.seq_len = seq_len
         self.text_embed_path = text_embed_path
         self.num_segments = num_segments
+        self.num_channels = num_channels
 
         self.attr_n_ops = None
 
     def get_split(self, split, text_type=None, *args):
         return CausalSampleSplit(
             ts_path=self.ts_path,
+            seq_len=self.seq_len,
             text_embed_path=self.text_embed_path,
+            num_channels=self.num_channels,
             num_segments=self.num_segments,
             split=split,
         )
 
 
 class CausalSampleSplit(Dataset):
-
     def __init__(
         self,
         ts_path,
+        seq_len,
         text_embed_path,
+        num_channels,
         num_segments=4,
         split="train",
     ):
@@ -813,14 +820,25 @@ class CausalSampleSplit(Dataset):
 
         self.split = split
         self.num_segments = num_segments
+        self.num_channels = num_channels
 
         # ------------------------
         # load data
         # ------------------------
-        self.ts = np.load(f"{ts_path}/{split}_ts.npy", allow_pickle=True)  # (N,T,C)
-        self.text_embed = torch.load(f"{text_embed_path}/{split}_embeds.pt", map_location="cpu")
+        self.ts = None
+        if ts_path != "none":
+            self.ts = np.load(f"{ts_path}/{split}_ts.npy", allow_pickle=True)  # (N,T,C)
+            self.N, self.T, self.C = self.ts.shape
+        else:
+            self.N = -1
+            self.T = seq_len,
+            self.C = num_channels,
 
-        self.N, self.T, self.C = self.ts.shape
+        if not self.text_embed.endswith('.pt'):
+            self.text_embed = torch.load(f"{text_embed_path}/{split}_embeds.pt", map_location="cpu")
+        else:
+            self.text_embed = torch.load(text_embed_path, map_location="cpu")
+
 
         assert self.T % self.num_segments == 0
 
@@ -848,10 +866,11 @@ class CausalSampleSplit(Dataset):
         image_id = self.ids[idx]
         ts_id = int(image_id.replace("image", ""))
 
-        ts = self.ts[ts_id]  # (T,C)
-
-        ts = torch.from_numpy(ts).float().transpose(0, 1)  # (C,T)
-
+        if self.ts is not None:
+            ts = self.ts[ts_id]  # (T,C)
+            ts = torch.from_numpy(ts).float().transpose(0, 1)  # (C,T)
+        else:
+            ts = torch.zeros((self.C, self.T)).float()
         # ------------------------
         # text embedding
         # ------------------------

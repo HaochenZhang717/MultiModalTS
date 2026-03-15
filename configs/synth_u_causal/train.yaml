@@ -4,6 +4,8 @@ data:
   ts_path: /playpen-shared/haochenz/LitsDatasets/128_len_ts/synthetic_u
   text_embed_path: /playpen-shared/haochenz/LitsDatasets/128_len_caps_one_per_channel_0309/synth_u/
   num_segments: 4
+  seq_len: 128
+  num_channels: 1
 
 
 ### Pretrain ###

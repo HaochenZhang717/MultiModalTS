@@ -24,13 +24,13 @@ class ConditionalPredictor(nn.Module):
         self._init_diff(diff_configs)
 
     def _init_condition_encoders(self, diff_configs, cond_configs):
-        if cond_configs["cond_modal"] == "multimodal":
-            cond_configs["multimodal"]["device"] = self.device
+        if cond_configs["cond_modal"] == "aireadi":
+            cond_configs["aireadi"]["device"] = self.device
             self.cond_projector = nn.Sequential(
-                nn.Linear(cond_configs["multimodal"]["pretrain_model_dim"], cond_configs["multimodal"]["vl_emb_hidden_dim"]),
-                nn.LayerNorm(cond_configs["multimodal"]["vl_emb_hidden_dim"]),
+                nn.Linear(cond_configs["aireadi"]["pretrain_model_dim"], cond_configs["aireadi"]["vl_emb_hidden_dim"]),
+                nn.LayerNorm(cond_configs["aireadi"]["vl_emb_hidden_dim"]),
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Linear(cond_configs["multimodal"]["vl_emb_hidden_dim"], cond_configs["multimodal"]["vl_emb"])
+                nn.Linear(cond_configs["aireadi"]["vl_emb_hidden_dim"], cond_configs["aireadi"]["vl_emb"])
             )
             self.cond_projector = self.cond_projector.to(self.device)
         else:

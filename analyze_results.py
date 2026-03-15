@@ -340,25 +340,61 @@ if __name__ == "__main__":
     #     block_id=2
     # )
 
-    calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block3",
-        block_id=3
-    )
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block3",
+    #     block_id=3
+    # )
+    #
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+    #     block_id=None
+    # )
+    #
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+    #     block_id=0
+    # )
+    #
+    # calculate_all_scores(
+    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block0.pt",
+    #     block_id=0
+    # )
+
 
     calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
+        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
         block_id=None
     )
 
     calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
-        block_id=0
+        "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
+        block_id=None
     )
 
     calculate_all_scores(
-        "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block0.pt",
-        block_id=0
+        "/playpen/haochenz/save/causal_correct/istanbul_traffic/0/samples.pt",
+        block_id=None
     )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
+        block_id=None
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
+        block_id=None
+    )
+
+    calculate_all_scores(
+        "/playpen/haochenz/save/non_causal_correct/istanbul_traffic/0/samples.pt",
+        block_id=None
+    )
+
+
+
+
+
 
 
     # all = torch.load('samples.pth', map_location="cpu")

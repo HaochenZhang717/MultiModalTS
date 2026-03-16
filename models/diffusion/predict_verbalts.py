@@ -388,7 +388,7 @@ class PredictVerbalTS(nn.Module):
             x_list.append(x)
             side_list.append(side_emb)
             scale_length.append(x.shape[-1])
-            patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
+            # patch_length = self.config["base_patch"]*self.config["L_patch_len"]**i
             # attr_emb_list.append(attr_emb_raw.repeat_interleave(32//patch_length, dim=-1))
 
         x_in = torch.cat(x_list, dim=-1)
@@ -398,9 +398,10 @@ class PredictVerbalTS(nn.Module):
         # print(f"side_in.shape = {side_in.shape}")
         # print(f"attr_emb.shape = {attr_emb.shape}")
         # breakpoint()
-        print(attr_emb_raw.shape)
-        breakpoint()
-        B, _, Nk, Nl = x_in.shape
+
+        B, _, Nk, Nl = x_in.shape # [512, 64, 1, 448]
+        attr_emb = attr_emb_raw.unsqueeze(1).permute(0,3,1,2) # (512, 1, 1, 64)
+        attr_emb = attr_emb.expand(B, attr_emb.shape[1], Nk, Nl)
 
         _x_in = x_in
         skip = []

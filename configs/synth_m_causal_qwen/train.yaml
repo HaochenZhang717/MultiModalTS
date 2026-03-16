@@ -1,0 +1,19 @@
+### Dataset ###
+data:
+  name: causal_sample
+  ts_path: /playpen-shared/haochenz/LitsDatasets/128_len_ts/synthetic_m
+  text_embed_path: /playpen-shared/haochenz/LitsDatasets/128_len_caps_one_per_channel_0309/synth_m/
+  num_segments: 4
+  seq_len: 128
+  num_channels: 2
+
+### Pretrain ###
+train:
+  epochs: 200
+  batch_size: 256
+  lr: 1.0e-3
+  itr_per_epoch: 1.0e+8
+  model_path: ""
+  output_folder: pretrain
+  val_epoch_interval: 10
+  display_interval: 1

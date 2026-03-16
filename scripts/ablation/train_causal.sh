@@ -1,5 +1,6 @@
 export HF_HOME=/playpen/haochenz/hf_cache
 export USE_CAUSAL="true"
+export WHICH_EMBED="qwen"
 
 
 CUDA_VISIBLE_DEVICES=3 python run_causal.py \

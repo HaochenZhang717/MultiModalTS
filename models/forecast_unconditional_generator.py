@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.diffusion.causal_verbalts import CausalVerbalTS
+from models.diffusion.predict_verbalts import PredictVerbalTS
 from samplers import DDPMSampler, DDIMSampler
 import numpy as np
 import time
@@ -16,7 +16,7 @@ class UnConditionalPredictor(nn.Module):
 
     def _init_diff(self, configs):
         configs["device"] = self.device
-        self.diff_model = CausalVerbalTS(configs, inputdim=1).to(self.device)
+        self.diff_model = PredictVerbalTS(configs, inputdim=1).to(self.device)
 
         self.num_steps = configs["num_steps"]
         self.ddpm = DDPMSampler(self.num_steps, configs["beta_start"], configs["beta_end"], configs["schedule"], self.device)

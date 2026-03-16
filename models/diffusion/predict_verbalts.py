@@ -316,7 +316,7 @@ class ResidualBlock(nn.Module):
         return (x + residual) / math.sqrt(2.0), skip
 
 
-class CausalVerbalTS(nn.Module):
+class PredictVerbalTS(nn.Module):
     def __init__(self, config, inputdim=1):
         super().__init__()
         self.config = config

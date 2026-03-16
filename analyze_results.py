@@ -536,6 +536,10 @@ def local_visualize():
 
 if __name__ == "__main__":
 
+    calculate_all_scores_two_paths(
+        "/playpen/haochenz/save/causal_moment_embeds/synth_u/0/real_text_samples.pt",
+        "/playpen/haochenz/save/causal_moment_embeds/synth_u/0/real_text_samples.pt",
+    )
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
     #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
@@ -575,7 +579,7 @@ if __name__ == "__main__":
     # # plt.plot(all['sampled_ts'][0,0,:32,0], label='fake')
     # plt.show()
 
-    local_visualize()
+    # local_visualize()
 
 
 

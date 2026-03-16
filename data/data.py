@@ -181,21 +181,21 @@ def aireadi_collate_fn(batch):
 
 
 
-def build_block_causal_mask(seq_len=128, block_size=32):
-
-    num_blocks = seq_len // block_size
-
-    # block level mask
-    block_mask = torch.triu(
-        torch.ones(num_blocks, num_blocks, dtype=torch.bool),
-        diagonal=1
-    )
-
-    # expand to token level
-    token_mask = block_mask.repeat_interleave(block_size, dim=0)\
-                           .repeat_interleave(block_size, dim=1)
-
-    return token_mask
+# def build_block_causal_mask(seq_len=128, block_size=32):
+#
+#     num_blocks = seq_len // block_size
+#
+#     # block level mask
+#     block_mask = torch.triu(
+#         torch.ones(num_blocks, num_blocks, dtype=torch.bool),
+#         diagonal=1
+#     )
+#
+#     # expand to token level
+#     token_mask = block_mask.repeat_interleave(block_size, dim=0)\
+#                            .repeat_interleave(block_size, dim=1)
+#
+#     return token_mask
 
 
 
@@ -848,11 +848,12 @@ class CausalSampleSplit(Dataset):
 
         self.caps = None
         if self.caps_path != "none":
-            data = []
+            caps_dict = {}
             with open(f"{self.caps_path}/{split}_caps_ready.jsonl", "r") as f:
                 for line in f:
-                    data.append(json.loads(line))
-            self.caps = data
+                    item = json.loads(line)
+                    caps_dict[item["id"]] = item["captions"]
+            self.caps = caps_dict
 
         assert self.T % self.num_segments == 0
 
@@ -887,9 +888,10 @@ class CausalSampleSplit(Dataset):
             ts = torch.zeros((self.C, self.T)).float()
 
         if self.caps is not None:
-            caps = self.caps[ts_id]["captions"]
+            caps = self.caps[image_id]
+
         else:
-            caps = "caps not loaded :("
+            caps = "caps not loaded."
         # ------------------------
         # text embedding
         # ------------------------

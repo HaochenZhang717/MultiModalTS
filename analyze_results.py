@@ -512,6 +512,27 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     return real
 
 
+def local_visualize():
+    samples = torch.load("./results/synth_u_real_text_samples.pt")
+    for i in range(len(samples)):
+        real = samples['real_ts'][i]
+        num_channels = real.shape[0]
+        num_segments = 4
+        for i_channel in range(num_channels):
+            for i_seg in range(num_segments):
+                plt.plot(real[i_channel, 32*i_seg:32*i_seg+32], label="real", color="orange")
+                for j in range(10):
+                    fake = samples['sampled_ts'][j, i, i_channel, 32*i_seg:32*i_seg+32]
+                    plt.plot(fake, label="fake", color="blue", alpha=0.3)
+                key = f"seg{i_seg + 1}_channel{i_channel}"
+                cap = next(d[key] for d in samples['caption'][i] if key in d)
+                plt.title(cap)
+                plt.savefig(f"./results/figures/{cap}.png")
+                plt.close()
+        # plt.legend()
+        plt.show()
+        if i > 3:
+            break
 
 if __name__ == "__main__":
 
@@ -548,28 +569,13 @@ if __name__ == "__main__":
     #     fake_path="/playpen/haochenz/save/non_causal_correct/synth_m/0/fake_text_samples.pt"
     # )
 
-    samples = torch.load("./results/samples_synth_u_causal.pt")
-
-    for i in range(len(samples)):
-        real = samples['real_ts'][i].flatten()
-        plt.plot(real, label="real", color="orange")
-        for j in range(10):
-            fake = samples['sampled_ts'][j, i].flatten()
-            plt.plot(fake, label="fake", color="blue")
-        # plt.legend()
-        plt.show()
-        if i > 3:
-            break
-
-
-
     # all = torch.load('samples.pth', map_location="cpu")
     #
     # plt.plot(all['real_ts'][0,0,:32], label='real')
     # # plt.plot(all['sampled_ts'][0,0,:32,0], label='fake')
     # plt.show()
 
-
+    local_visualize()
 
 
 

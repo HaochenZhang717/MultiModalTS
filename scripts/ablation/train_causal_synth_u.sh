@@ -65,4 +65,5 @@ CUDA_VISIBLE_DEVICES=5 python run_causal.py \
     --epochs 2500 \
     --batch_size 512 \
     --clip_cache_path "" \
-    --n_runs 1
+    --n_runs 1 \
+    --only_evaluate true

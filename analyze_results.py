@@ -541,6 +541,11 @@ if __name__ == "__main__":
         "/playpen/haochenz/save/causal_moment_embeds/synth_u/0/real_text_samples.pt",
     )
 
+    calculate_all_scores_two_paths(
+        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+    )
+
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/causal_moment_embeds/synth_m/0/real_text_samples.pt",
     #     "/playpen/haochenz/save/causal_moment_embeds/synth_m/0/real_text_samples.pt",

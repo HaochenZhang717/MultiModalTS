@@ -49,10 +49,10 @@ class CausalConditionalGenerator(nn.Module):
     def forward(self, batch, is_train):
         # x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
         x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
-        B, _, T = x.shape
+        B, C, T = x.shape
 
         moment_embeds = moment_embeds.permute(0, 2, 1, 3)
-        moment_embeds = moment_embeds.reshape(B, 4, 4, 1, 1024).mean(dim=2)
+        moment_embeds = moment_embeds.reshape(B, 4, 4, C, 1024).mean(dim=2)
 
         # print(f"text_embedding_all_segments.shape = {text_embedding_all_segments.shape}")
         # print(f"moment_embeds.shape = {moment_embeds.shape}")

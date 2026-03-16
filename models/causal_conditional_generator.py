@@ -47,11 +47,13 @@ class CausalConditionalGenerator(nn.Module):
             print("Learn from scratch")
 
     def forward(self, batch, is_train):
-        # x, tp, attrs, attrs_embed_batch, loss_mask = self._unpack_data_cond_gen(batch)
-        # x, tp, text_embed, loss_mask, attn_mask = self._unpack_data_cond_gen(batch)
-        x, tp, text_embedding_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        # x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
+        x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
         B, _, T = x.shape
 
+        print(f"text_embedding_all_segments.shape = {text_embedding_all_segments.shape}")
+        print(f"moment_embeds.shape = {moment_embeds.shape}")
+        breakpoint()
         text_embed = text_embedding_all_segments
 
         B = x.shape[0]
@@ -78,22 +80,23 @@ class CausalConditionalGenerator(nn.Module):
             loss_dict[k] = loss_dict[k] / self.generator.num_steps
         return loss_dict
 
-    def _unpack_data_cond_gen(self, batch):
-        ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
-        B, _, T  = ts.shape
-        tp = torch.arange(T).repeat(B, 1).to(self.device).float()
-        loss_mask = batch["loss_mask"].to(self.device).float()
-        text_embed = batch["text_embedding"].to(self.device).float()
-        attn_mask = batch["attn_mask"].to(self.device).float()
-        return ts, tp, text_embed, loss_mask, attn_mask
+    # def _unpack_data_cond_gen(self, batch):
+    #     ts = batch["ts"].to(self.device).float() # batch_size, num_channels, seq_len
+    #     B, _, T  = ts.shape
+    #     tp = torch.arange(T).repeat(B, 1).to(self.device).float()
+    #     loss_mask = batch["loss_mask"].to(self.device).float()
+    #     text_embed = batch["text_embedding"].to(self.device).float()
+    #     attn_mask = batch["attn_mask"].to(self.device).float()
+    #     return ts, tp, text_embed, loss_mask, attn_mask
 
-    def _unpack_data_cond_gen_for_sample(self, batch):
+    def _unpack_data_cond_gen(self, batch):
         ts = batch["ts"].to(self.device).float()  # batch_size, num_channels, seq_len
         B, _, T = ts.shape
         tp = torch.arange(T).repeat(B, 1).to(self.device).float()
         text_embedding_all_segments = batch["text_embedding_all_segments"].to(self.device).float()
+        moment_embeds = batch["moment_embed"].to(self.device).float()
         # attn_mask = batch["attn_mask"].to(self.device).float()
-        return ts, tp, text_embedding_all_segments
+        return ts, tp, text_embedding_all_segments, moment_embeds
 
     def generate(self, batch, n_samples, sampler="ddim"):
         if self.cond_configs["cond_modal"] == "constraint":
@@ -152,7 +155,7 @@ class CausalConditionalGenerator(nn.Module):
 
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen_for_sample(batch)
+        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen(batch)
         samples = []
         B, _, T = ts.shape
 

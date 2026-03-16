@@ -6,7 +6,7 @@ CUDA_VISIBLE_DEVICES=5 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
-    --save_folder ../save/causal_correct/synth_m \
+    --save_folder ../save/causal_moment_embed/synth_m \
     --samples_name "fake_text_samples.pt" \
     --model_diff_config_path configs/synth_m_causal/diff/model.yaml \
     --model_cond_config_path configs/synth_m_causal/cond/text_msmdiffmv.yaml \
@@ -49,7 +49,7 @@ CUDA_VISIBLE_DEVICES=5 python run_causal.py \
     --cond_modal multimodal \
     --text_type my_generated_text_embeds \
     --training_stage finetune \
-    --save_folder ../save/causal_correct/synth_u \
+    --save_folder ../save/causal_moment_embed/synth_u \
     --samples_name "fake_text_samples.pt" \
     --model_diff_config_path configs/synth_u_causal/diff/model.yaml \
     --model_cond_config_path configs/synth_u_causal/cond/text_msmdiffmv.yaml \

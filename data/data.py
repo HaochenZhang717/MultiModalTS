@@ -828,6 +828,7 @@ class CausalSampleSplit(Dataset):
         self.ts = None
         if ts_path != "none":
             self.ts = np.load(f"{ts_path}/{split}_ts.npy", allow_pickle=True)  # (N,T,C)
+            self.moment_embed = np.load(f"{ts_path}/{split}_moment_embeds.npy", allow_pickle=True)
             self.N, self.T, self.C = self.ts.shape
         else:
             self.N = -1
@@ -892,6 +893,7 @@ class CausalSampleSplit(Dataset):
             "text_embedding_all_segments": text_embed_all_segments,
             "image_id": image_id,
             "ts_id": ts_id,
+            "moment_embed": self.moment_embed[idx],
             # 'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
         }
 
@@ -903,6 +905,7 @@ class CausalSampleSplit(Dataset):
         out["ts"] = torch.stack([b["ts"] for b in batch])
         out["ts_len"] = torch.tensor([b["ts_len"] for b in batch])
         out["text_embedding_all_segments"] = torch.stack([b["text_embedding_all_segments"] for b in batch])
+        out["moment_embed"] = torch.stack([b["moment_embed"] for b in batch])
         out["image_id"] = [b["image_id"] for b in batch]
         out["ts_id"] = torch.tensor([b["ts_id"] for b in batch])
         # out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])

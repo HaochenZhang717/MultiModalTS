@@ -566,15 +566,15 @@ if __name__ == "__main__":
     # )
 
 
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
-        "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
-    )
-
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
-        "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
-    )
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
+    #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
+    # )
+    #
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
+    #     "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
+    # )
 
 
 

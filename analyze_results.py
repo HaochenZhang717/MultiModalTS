@@ -405,48 +405,110 @@ def calculate_all_scores(results_path, block_id):
 #     return real
 
 
+# def calculate_all_scores_two_paths(real_path, fake_path):
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#
+#     # real = np.load(real_path, allow_pickle=True)
+#     real_dict = torch.load(real_path, map_location="cpu", weights_only=False)
+#     real = real_dict["real_ts"]
+#     # real = torch.from_numpy(real).to(device)
+#     print(f"real shape = {real.shape}")
+#     results_dict = torch.load(fake_path, map_location="cpu", weights_only=False)
+#     print(f"fake shape = {results_dict['sampled_ts'].shape}")
+#     num_sampels = min(len(real), len(results_dict["sampled_ts"][0]))
+#     real = real[:num_sampels]
+#
+#     disc_score_list = []
+#     pred_score_list = []
+#     for i in range(10):
+#         # print(i)
+#         fake = results_dict["sampled_ts"][i][:num_sampels]
+#         discriminative_score = discriminative_score_metrics(
+#             real, fake,
+#             real.shape[-1],
+#             device,
+#         )
+#         # print(f"Discriminative Score Metrics: {discriminative_score}")
+#
+#         # predictive_score = predictive_score_metrics(real, fake, device)
+#         # print(f"Predictive Score Metrics: {predictive_score}")
+#         disc_score_list.append(discriminative_score)
+#         # pred_score_list.append(predictive_score)
+#
+#     disc_score_arr = np.array(disc_score_list)
+#     # pred_score_arr = np.array(pred_score_list)
+#
+#     disc_mean = disc_score_arr.mean()
+#     disc_std = disc_score_arr.std(ddof=1)  # sample std
+#
+#     # pred_mean = pred_score_arr.mean()
+#     # pred_std = pred_score_arr.std(ddof=1)
+#     print(fake_path)
+#     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
+#     # print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
+#     print("---"*50)
+#     return real
+
+
+
 def calculate_all_scores_two_paths(real_path, fake_path):
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # real = np.load(real_path, allow_pickle=True)
     real_dict = torch.load(real_path, map_location="cpu", weights_only=False)
     real = real_dict["real_ts"]
-    # real = torch.from_numpy(real).to(device)
     print(f"real shape = {real.shape}")
     results_dict = torch.load(fake_path, map_location="cpu", weights_only=False)
     print(f"fake shape = {results_dict['sampled_ts'].shape}")
-    num_sampels = min(len(real), len(results_dict["sampled_ts"][0]))
-    real = real[:num_sampels]
+    num_samples = min(len(real), len(results_dict["sampled_ts"][0]))
+    real = real[:num_samples]
+
+    print(f"real shape: {real.shape}")
+    # ----------------------------
+    # load MOMENT once
+    # ----------------------------
+    moment_model = MOMENTPipeline.from_pretrained(
+        "AutonLab/MOMENT-1-large",
+        model_kwargs={"task_name": "embedding"},
+    )
+    moment_model.init()
+    moment_model = moment_model.to(device)
+    moment_model.eval()
 
     disc_score_list = []
-    pred_score_list = []
+    fid_score_list = []
+
+    # real embedding can be computed once
+    real_emb = _moment_embed(moment_model, real, device)
+
     for i in range(10):
-        # print(i)
-        fake = results_dict["sampled_ts"][i][:num_sampels]
+        fake = results_dict["sampled_ts"][i, :num_samples]
+
         discriminative_score = discriminative_score_metrics(
             real, fake,
             real.shape[-1],
             device,
         )
-        # print(f"Discriminative Score Metrics: {discriminative_score}")
-
-        # predictive_score = predictive_score_metrics(real, fake, device)
-        # print(f"Predictive Score Metrics: {predictive_score}")
         disc_score_list.append(discriminative_score)
-        # pred_score_list.append(predictive_score)
+
+        fake_emb = _moment_embed(moment_model, fake, device)
+        fid_score = _calculate_fid_from_embeddings(real_emb, fake_emb)
+        fid_score_list.append(fid_score)
 
     disc_score_arr = np.array(disc_score_list)
-    # pred_score_arr = np.array(pred_score_list)
+    fid_score_arr = np.array(fid_score_list)
 
     disc_mean = disc_score_arr.mean()
-    disc_std = disc_score_arr.std(ddof=1)  # sample std
+    disc_std = disc_score_arr.std(ddof=1)
 
-    # pred_mean = pred_score_arr.mean()
-    # pred_std = pred_score_arr.std(ddof=1)
+    fid_mean = fid_score_arr.mean()
+    fid_std = fid_score_arr.std(ddof=1)
+
     print(fake_path)
     print(f"Disc Score: mean = {disc_mean:.4f}, std = {disc_std:.4f}")
-    # print(f"Pred Score: mean = {pred_mean:.4f}, std = {pred_std:.4f}")
-    print("---"*50)
+    print(f"MOMENT-FID: mean = {fid_mean:.4f}, std = {fid_std:.4f}")
+    print("---" * 50)
+
     return real
 
 
@@ -504,20 +566,16 @@ if __name__ == "__main__":
     # )
 
 
-    calculate_all_scores(
+    calculate_all_scores_two_paths(
         "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
-        block_id=None
+        "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
     )
 
-    calculate_all_scores(
+    calculate_all_scores_two_paths(
         "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
-        block_id=None
+        "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
     )
 
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/non_causal_correct/istanbul_traffic/0/samples.pt",
-    #     block_id=None
-    # )
 
 
     calculate_all_scores_two_paths(
@@ -525,12 +583,22 @@ if __name__ == "__main__":
         fake_path="/playpen/haochenz/save/causal_correct/synth_u/0/fake_text_samples.pt"
     )
 
-
     calculate_all_scores_two_paths(
         "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
         fake_path="/playpen/haochenz/save/causal_correct/synth_m/0/fake_text_samples.pt"
     )
 
+
+
+    calculate_all_scores_two_paths(
+        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+        fake_path="/playpen/haochenz/save/causal_no_text/synth_u/0/samples.pt"
+    )
+
+    calculate_all_scores_two_paths(
+        "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
+        fake_path="/playpen/haochenz/save/causal_no_text/synth_m/0/samples.pt"
+    )
 
 
 

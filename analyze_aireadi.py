@@ -75,26 +75,26 @@ def calculate_forecast_scores(results_path, pred_start, pred_end):
 
 
 if __name__ == "__main__":
-    # samples = torch.load("/Users/zhc/Documents/LitsDatasets/samples.pt")
-    #
-    # for i in range(len(samples)):
-    #     real = samples['real_ts'][i].flatten()
-    #     plt.plot(real, label="real", color="orange")
-    #     for j in range(10):
-    #         fake = samples['sampled_ts'][j,i].flatten()
-    #         plt.plot(fake, label="fake", color="blue")
-    #     # plt.legend()
-    #     plt.show()
-    #     if i > 3:
-    #         break
-    calculate_forecast_scores(
-        results_path="/playpen/haochenz/save/aireadi/retinal_text_history_0315/0/samples.pt",
-        pred_start = 768,
-        pred_end = 1024,
-    )
+    samples = torch.load("/Users/zhc/Documents/LitsDatasets/samples.pt")
 
-    calculate_forecast_scores(
-        results_path="/playpen/haochenz/save/aireadi/history_0315/0/samples.pt",
-        pred_start=768,
-        pred_end=1024,
-    )
+    for i in range(len(samples)):
+        real = samples['real_ts'][i].flatten()
+        plt.plot(real, label="real", color="orange")
+        for j in range(10):
+            fake = samples['sampled_ts'][j,i].flatten()
+            plt.plot(fake, label="fake", color="blue")
+        # plt.legend()
+        plt.show()
+        if i > 3:
+            break
+    # calculate_forecast_scores(
+    #     results_path="/playpen/haochenz/save/aireadi/retinal_text_history_0315/0/samples.pt",
+    #     pred_start = 768,
+    #     pred_end = 1024,
+    # )
+    #
+    # calculate_forecast_scores(
+    #     results_path="/playpen/haochenz/save/aireadi/history_0315/0/samples.pt",
+    #     pred_start=768,
+    #     pred_end=1024,
+    # )

@@ -108,6 +108,7 @@ import torch
 from torch.utils.data import Dataset
 from PIL import Image
 import matplotlib.pyplot as plt
+import json
 
 
 def _parse_patient_id(x):
@@ -810,6 +811,7 @@ class CausalSampleSplit(Dataset):
     def __init__(
         self,
         ts_path,
+        caps_path,
         seq_len,
         text_embed_path,
         num_channels,
@@ -822,6 +824,7 @@ class CausalSampleSplit(Dataset):
         self.num_segments = num_segments
         self.num_channels = num_channels
 
+        self.caps_path = caps_path
         # ------------------------
         # load data
         # ------------------------
@@ -840,6 +843,13 @@ class CausalSampleSplit(Dataset):
         else:
             self.text_embed = torch.load(text_embed_path, map_location="cpu")
 
+        self.caps = None
+        if self.caps_path != "none":
+            data = []
+            with open(f"{self.caps_path}/{split}_caps_ready.jsonl", "r") as f:
+                for line in f:
+                    data.append(json.loads(line))
+            self.caps = data
 
         assert self.T % self.num_segments == 0
 
@@ -872,6 +882,11 @@ class CausalSampleSplit(Dataset):
             ts = torch.from_numpy(ts).float().transpose(0, 1)  # (C,T)
         else:
             ts = torch.zeros((self.C, self.T)).float()
+
+        if self.caps is not None:
+            caps = self.caps[ts_id]["captions"]
+        else:
+            caps = "caps not loaded :("
         # ------------------------
         # text embedding
         # ------------------------
@@ -894,6 +909,7 @@ class CausalSampleSplit(Dataset):
             "image_id": image_id,
             "ts_id": ts_id,
             "moment_embed": torch.from_numpy(self.moment_embed[idx]).float(),
+            "caps": caps,
             # 'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
         }
 
@@ -908,6 +924,7 @@ class CausalSampleSplit(Dataset):
         out["moment_embed"] = torch.stack([b["moment_embed"] for b in batch])
         out["image_id"] = [b["image_id"] for b in batch]
         out["ts_id"] = torch.tensor([b["ts_id"] for b in batch])
+        out["caps"] = [b["caps"] for b in batch]
         # out["attn_mask"] = torch.stack([b["attn_mask"] for b in batch])
 
         return out

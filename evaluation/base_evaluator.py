@@ -146,7 +146,7 @@ class BaseEvaluator:
                 multi_preds = self.model.generate(batch, self.n_samples, sampler)
                 # multi_preds = multi_preds.permute(0,1,3,2)
                 pred = multi_preds.median(dim=0).values
-                breakpoint()
+
                 # ts = batch["ts"].to(self.model.device).float()
                 # ts_len = batch["ts_len"].to(self.model.device).int()
                 # ts_gt_emb = self.clip.get_ts_coemb(ts, ts_len)
@@ -169,8 +169,8 @@ class BaseEvaluator:
                     sample_num += ts_gen_emb.shape[0]
 
                 # 🔵 新增：保存数据（移动到CPU避免显存爆炸）
-                if "caption" in batch.keys():
-                    result_ts_dict["caption"].extend(batch["cap"])
+                if "caps" in batch.keys():
+                    result_ts_dict["caption"].extend(batch["caps"])
                 if "ts" in batch.keys():
                     result_ts_dict["real_ts"].append(batch["ts"].cpu())
 

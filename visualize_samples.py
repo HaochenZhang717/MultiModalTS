@@ -16,7 +16,7 @@ def _moment_embed(moment_model, x, device, batch_size=64):
     with torch.no_grad():
         for start in range(0, x.shape[0], batch_size):
             batch = x[start:start + batch_size].to(device).float()
-
+            print(f"batch shape: {batch.shape}")
             out = moment_model(x_enc=batch, reduction="none").embeddings
             # out shape: (B, n_var, seq_len, dim)
             out = out.mean(dim=(1, 2))   # -> (B, dim)

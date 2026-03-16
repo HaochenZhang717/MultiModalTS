@@ -1,4 +1,5 @@
 export CUDA_VISIBLE_DEVICES=7
+export USE_CAUSAL="true"
 python run_forecast.py \
     --cond_modal aireadi \
     --text_type my_generated_text_embeds \

@@ -514,57 +514,6 @@ def calculate_all_scores_two_paths(real_path, fake_path):
 
 
 if __name__ == "__main__":
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block0",
-    #     block_id=0
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block1",
-    #     block_id=1
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/0314_random_batch_block/0/samples_block2",
-    #     block_id=2
-    # )
-
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block3",
-    #     block_id=3
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
-    #     block_id=None
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_all_blocks",
-    #     block_id=0
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/synth_u_causal/full_train_random_batch_block/0/samples_block0.pt",
-    #     block_id=0
-    # )
-
-
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
-    #     block_id=None
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
-    #     block_id=None
-    # )
-    #
-    # calculate_all_scores(
-    #     "/playpen/haochenz/save/causal_correct/istanbul_traffic/0/samples.pt",
-    #     block_id=None
-    # )
-
 
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/non_causal_correct/synth_u/0/samples.pt",
@@ -575,9 +524,9 @@ if __name__ == "__main__":
     #     "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
     #     "/playpen/haochenz/save/non_causal_correct/synth_m/0/samples.pt",
     # )
-
-
-
+    #
+    #
+    #
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
     #     fake_path="/playpen/haochenz/save/causal_correct/synth_u/0/fake_text_samples.pt"
@@ -587,32 +536,30 @@ if __name__ == "__main__":
     #     "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
     #     fake_path="/playpen/haochenz/save/causal_correct/synth_m/0/fake_text_samples.pt"
     # )
-
-
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
-        fake_path="/playpen/haochenz/save/non_causal_correct/synth_u/0/fake_text_samples.pt"
-    )
-
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
-        fake_path="/playpen/haochenz/save/non_causal_correct/synth_m/0/fake_text_samples.pt"
-    )
-
-
-
+    #
+    #
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
-    #     fake_path="/playpen/haochenz/save/causal_no_text/synth_u/0/samples.pt"
+    #     fake_path="/playpen/haochenz/save/non_causal_correct/synth_u/0/fake_text_samples.pt"
     # )
     #
     # calculate_all_scores_two_paths(
     #     "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
-    #     fake_path="/playpen/haochenz/save/causal_no_text/synth_m/0/samples.pt"
+    #     fake_path="/playpen/haochenz/save/non_causal_correct/synth_m/0/fake_text_samples.pt"
     # )
 
+    samples = torch.load("./results/samples_synth_u_causal.pt")
 
-
+    for i in range(len(samples)):
+        real = samples['real_ts'][i].flatten()
+        plt.plot(real, label="real", color="orange")
+        for j in range(10):
+            fake = samples['sampled_ts'][j, i].flatten()
+            plt.plot(fake, label="fake", color="blue")
+        # plt.legend()
+        plt.show()
+        if i > 3:
+            break
 
 
 

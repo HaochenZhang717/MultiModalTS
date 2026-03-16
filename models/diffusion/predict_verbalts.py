@@ -200,6 +200,7 @@ class SidePatchEmbedding(nn.Module):
         x = x.permute(0, 3, 1, 2).contiguous()
         return x
 
+
 class PatchDecoder(nn.Module):
     def __init__(self, L_patch_len, d_model, channels):
         super().__init__()
@@ -214,6 +215,7 @@ class PatchDecoder(nn.Module):
         x = x.reshape(B, n_var, Nl, self.L_patch_len, self.channels).permute(0, 4, 1, 2, 3).contiguous()
         x = x.reshape(B, self.channels, n_var, Nl*self.L_patch_len)
         return x
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, side_dim, channels, diffusion_embedding_dim, nheads, condition_type="add"):
@@ -235,7 +237,7 @@ class ResidualBlock(nn.Module):
                 nn.Linear(channels, 3 * channels, bias=True)
             )
 
-    def forward_time(self, y, base_shape, is_causal):
+    def forward_time(self, y, base_shape):
         # do attention in time direction
         B, channel, K, L = base_shape # torch.Size([512, 64, 1, 47])
         if L == 1:
@@ -246,12 +248,12 @@ class ResidualBlock(nn.Module):
         y = y.reshape(B, K, channel, L).permute(0, 2, 1, 3).reshape(B, channel, K * L)
         return y
 
-    def forward_feature(self, y, base_shape, is_causal):
+    def forward_feature(self, y, base_shape):
         B, channel, K, L = base_shape
         if K == 1:
             return y
         y = y.reshape(B, channel, K, L).permute(0, 3, 1, 2).reshape(B * L, channel, K)
-        y = self.feature_layer(y.permute(0, 2, 1), is_causal).permute(0, 2, 1)
+        y = self.feature_layer(y.permute(0, 2, 1), is_causal=False).permute(0, 2, 1)
         y = y.reshape(B, L, channel, K).permute(0, 2, 3, 1).reshape(B, channel, K * L)
         return y
     
@@ -266,7 +268,7 @@ class ResidualBlock(nn.Module):
     def modulate(self, x, shift, scale):
         return x * (1 + scale) + shift
 
-    def forward(self, x, side_emb, attr_emb, diffusion_emb, attention_mask=None, condition_type="add"):
+    def forward(self, x, side_emb, attr_emb, diffusion_emb, condition_type="add"):
     
         # if condition_type == "add":
         #     x = x + attr_emb
@@ -276,8 +278,9 @@ class ResidualBlock(nn.Module):
         #     gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
         #     gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
 
-        gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
-        gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
+        if condition_type == "adaLN":
+            gama, beta, alpha = self.adaLN_modulation(attr_emb.permute(0,2,3,1)).chunk(3, dim=-1)
+            gama, beta, alpha = gama.permute(0,3,1,2), beta.permute(0,3,1,2), alpha.permute(0,3,1,2)
 
         B, channel, K, L = x.shape
         base_shape = x.shape
@@ -289,8 +292,8 @@ class ResidualBlock(nn.Module):
 
         # y.shape == torch.Size([512, 64, 1, 47])
         # base_shape == torch.Size([512, 64, 1, 47])
-        y = self.forward_time(y, base_shape, is_causal=True) # set to attention_mask==None for now.
-        y = self.forward_feature(y, base_shape, is_causal=False)
+        y = self.forward_time(y, base_shape) # set to attention_mask==None for now.
+        y = self.forward_feature(y, base_shape)
 
         if condition_type == "adaLN":
             y = y.reshape(B,channel,K,L)
@@ -400,9 +403,11 @@ class PredictVerbalTS(nn.Module):
         # breakpoint()
 
         B, _, Nk, Nl = x_in.shape # [512, 64, 1, 448]
-        attr_emb = attr_emb_raw.unsqueeze(1).permute(0,3,1,2) # (512, 1, 1, 64)
-        attr_emb = attr_emb.expand(B, attr_emb.shape[1], Nk, Nl)
-
+        if attr_emb_raw is not None:
+            attr_emb = attr_emb_raw.unsqueeze(1).permute(0,3,1,2) # (512, 1, 1, 64)
+            attr_emb = attr_emb.expand(B, attr_emb.shape[1], Nk, Nl)
+        else:
+            attr_emb = None
         _x_in = x_in
         skip = []
         for layer in self.residual_layers:

@@ -136,6 +136,7 @@ parser.add_argument("--epochs", type=int, default=200)
 parser.add_argument("--guide_w", type=float, default=1.0)
 parser.add_argument("--only_evaluate", type=bool, default=False)
 parser.add_argument("--samples_name", type=str, required=True)
+parser.add_argument("--condition_type", type=str, required=True)
 
 
 # extra parameters
@@ -215,6 +216,10 @@ for n in range(args.start_runid, args.n_runs):
         model_diff_configs["generator_pretrain_path"] = f"{args.generator_pretrain_path}/{n}/ckpts/model_best_loss.pth"
     else:
         model_diff_configs["generator_pretrain_path"] = ""
+
+    model_diff_configs["diffusion"]["condition_type"] = args.condition_type
+    print(model_diff_configs)
+    breakpoint()
     df = run(args.training_stage, train_configs, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder, only_evaluate=args.only_evaluate)
 
     n_records = df.shape[0]

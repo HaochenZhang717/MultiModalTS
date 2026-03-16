@@ -104,7 +104,7 @@ class CausalConditionalGenerator(nn.Module):
         B, _, T = ts.shape
         tp = torch.arange(T).repeat(B, 1).to(self.device).float()
         text_embedding_all_segments = batch["text_embedding_all_segments"].to(self.device).float()
-        moment_embeds = batch["moment_embed"].to(self.device).float()
+        moment_embeds = batch["moment_embed"].to(self.device).float() if batch["moment_embed"] is not None else None
         # attn_mask = batch["attn_mask"].to(self.device).float()
         return ts, tp, text_embedding_all_segments, moment_embeds
 

@@ -218,8 +218,6 @@ for n in range(args.start_runid, args.n_runs):
         model_diff_configs["generator_pretrain_path"] = ""
 
     model_diff_configs["diffusion"]["condition_type"] = args.condition_type
-    print(model_diff_configs)
-    breakpoint()
     df = run(args.training_stage, train_configs, eval_configs, model_diff_configs, model_cond_configs, output_folder, data_folder=args.data_folder, only_evaluate=args.only_evaluate)
 
     n_records = df.shape[0]

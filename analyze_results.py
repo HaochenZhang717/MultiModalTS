@@ -545,6 +545,12 @@ if __name__ == "__main__":
         "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
         "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
     )
+
+    calculate_all_scores_two_paths(
+        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+        "/playpen/haochenz/save/causal_correct/synth_u/0/fake_text_samples.pt",
+    )
+
     calculate_all_scores_two_paths(
         "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
         "/playpen/haochenz/save/causal_no_text/synth_u/0/samples.pt",

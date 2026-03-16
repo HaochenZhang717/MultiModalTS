@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
-samples = torch.load("samples.pt")
+samples = torch.load("/Users/zhc/Documents/LitsDatasets/samples.pt")
 
 for i in range(len(samples)):
     real = samples['real_ts'][i].flatten()
@@ -14,4 +14,5 @@ for i in range(len(samples)):
         plt.plot(fake, label="fake", color="blue")
     # plt.legend()
     plt.show()
-    break
+    if i > 3:
+        break

@@ -51,26 +51,29 @@ class CausalConditionalGenerator(nn.Module):
         x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
         B, _, T = x.shape
 
-        print(f"text_embedding_all_segments.shape = {text_embedding_all_segments.shape}")
-        print(f"moment_embeds.shape = {moment_embeds.shape}")
-        breakpoint()
-        text_embed = text_embedding_all_segments
+        moment_embeds = moment_embeds.permute(0, 2, 1, 3)
+        moment_embeds = moment_embeds.reshape(B, 4, 4, 1, 1024).mean(dim=2)
+
+        # print(f"text_embedding_all_segments.shape = {text_embedding_all_segments.shape}")
+        # print(f"moment_embeds.shape = {moment_embeds.shape}")
+        # breakpoint()
+        attr_embed = moment_embeds
 
         B = x.shape[0]
         if is_train:
             t = torch.randint(0, self.generator.num_steps, [B], device=self.device)
 
-            text_embed = self.cond_projector(text_embed)  # for now we are not using projector.
+            attr_embed = self.cond_projector(attr_embed)  # for now we are not using projector.
 
-            loss = self.generator._noise_estimation_loss(x, tp, text_embed, t)
+            loss = self.generator._noise_estimation_loss(x, tp, attr_embed, t)
             return loss
         
         loss_dict = {}
-        text_embed = self.cond_projector(text_embed)
+        attr_embed = self.cond_projector(attr_embed)
         for t in range(self.generator.num_steps):
             t = (torch.ones(B, device=self.device) * t).long()
 
-            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, text_embed, t)
+            tmp_loss_dict = self.generator._noise_estimation_loss(x, tp, attr_embed, t)
             for k in tmp_loss_dict:
                 if k in loss_dict.keys():
                     loss_dict[k] += tmp_loss_dict[k]
@@ -155,13 +158,20 @@ class CausalConditionalGenerator(nn.Module):
 
     @torch.no_grad()
     def generate_text(self, batch, n_samples, sampler="ddim"):
-        ts, tp, text_embed_all_segments = self._unpack_data_cond_gen(batch)
-        samples = []
+
+        ts, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
         B, _, T = ts.shape
 
+        moment_embeds = moment_embeds.permute(0, 2, 1, 3)
+        moment_embeds = moment_embeds.reshape(B, 4, 4, 1, 1024).mean(dim=2)
+
+        attr_embed = moment_embeds
+
+
+        samples = []
         for i in range(n_samples):
             x = torch.randn_like(ts)
-            attr_emb = self.cond_projector(text_embed_all_segments)
+            attr_emb = self.cond_projector(attr_embed)
 
             for t in range(self.generator.num_steps-1, -1, -1):
                 noise = torch.randn_like(x)

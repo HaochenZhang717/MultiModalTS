@@ -1,6 +1,6 @@
 export HF_HOME=/playpen/haochenz/hf_cache
 export USE_CAUSAL="false"
-
+export WHICH_EMBED="qwen"
 
 #CUDA_VISIBLE_DEVICES=6 python run_causal.py \
 #    --cond_modal multimodal \

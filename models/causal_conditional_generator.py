@@ -9,6 +9,7 @@ from models.cttp.cttp_model import CTTP
 import time
 import random
 import yaml
+import os
 
 
 
@@ -51,13 +52,19 @@ class CausalConditionalGenerator(nn.Module):
         x, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
         B, C, T = x.shape
 
-        moment_embeds = moment_embeds.permute(0, 2, 1, 3)
-        moment_embeds = moment_embeds.reshape(B, 4, 4, C, 1024).mean(dim=2)
+        which_embed = os.getenv("WHICH_EMBED", "moment")
+        if which_embed == "moment":
+            attr_embed = moment_embeds.permute(0, 2, 1, 3)
+            attr_embed = attr_embed.reshape(B, 4, 4, C, 1024).mean(dim=2)
+        elif which_embed == "qwen":
+            attr_embed = text_embedding_all_segments
+        else:
+            raise NotImplementedError
 
         # print(f"text_embedding_all_segments.shape = {text_embedding_all_segments.shape}")
         # print(f"moment_embeds.shape = {moment_embeds.shape}")
         # breakpoint()
-        attr_embed = moment_embeds
+        # attr_embed = moment_embeds
 
         B = x.shape[0]
         if is_train:
@@ -160,12 +167,17 @@ class CausalConditionalGenerator(nn.Module):
     def generate_text(self, batch, n_samples, sampler="ddim"):
 
         ts, tp, text_embedding_all_segments, moment_embeds = self._unpack_data_cond_gen(batch)
-        B, _, T = ts.shape
+        B, C, T = ts.shape
 
-        moment_embeds = moment_embeds.permute(0, 2, 1, 3)
-        moment_embeds = moment_embeds.reshape(B, 4, 4, 1, 1024).mean(dim=2)
 
-        attr_embed = moment_embeds
+        which_embed = os.getenv("WHICH_EMBED", "moment")
+        if which_embed == "moment":
+            attr_embed = moment_embeds.permute(0, 2, 1, 3)
+            attr_embed = attr_embed.reshape(B, 4, 4, C, 1024).mean(dim=2)
+        elif which_embed == "qwen":
+            attr_embed = text_embedding_all_segments
+        else:
+            raise NotImplementedError
 
 
         samples = []

@@ -782,6 +782,7 @@ class CausalSampleDataset:
     def __init__(
         self,
         ts_path,
+        caps_path,
         seq_len,
         text_embed_path,
         num_channels,
@@ -789,6 +790,7 @@ class CausalSampleDataset:
         **kwargs
     ):
         self.ts_path = ts_path
+        self.caps_path = caps_path
         self.seq_len = seq_len
         self.text_embed_path = text_embed_path
         self.num_segments = num_segments
@@ -799,6 +801,7 @@ class CausalSampleDataset:
     def get_split(self, split, text_type=None, *args):
         return CausalSampleSplit(
             ts_path=self.ts_path,
+            caps_path=self.caps_path,
             seq_len=self.seq_len,
             text_embed_path=self.text_embed_path,
             num_channels=self.num_channels,

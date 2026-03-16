@@ -49,6 +49,7 @@ if __name__ == "__main__":
         )
     moment_model.init()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    train_ts = torch.from_numpy(train_ts).float().to(device)
     moment_model = moment_model.to(device)
     moment_model.eval()
     train_embed = _moment_embed(moment_model, train_ts, device)

@@ -893,7 +893,7 @@ class CausalSampleSplit(Dataset):
             "text_embedding_all_segments": text_embed_all_segments,
             "image_id": image_id,
             "ts_id": ts_id,
-            "moment_embed": self.moment_embed[idx],
+            "moment_embed": torch.from_numpy(self.moment_embed[idx]),
             # 'attn_mask': build_block_causal_mask(self.T, text_embed_all_segments.shape[0])
         }
 

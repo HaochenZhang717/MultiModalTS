@@ -578,27 +578,38 @@ if __name__ == "__main__":
 
 
 
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+    #     fake_path="/playpen/haochenz/save/causal_correct/synth_u/0/fake_text_samples.pt"
+    # )
+    #
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
+    #     fake_path="/playpen/haochenz/save/causal_correct/synth_m/0/fake_text_samples.pt"
+    # )
+
+
     calculate_all_scores_two_paths(
         "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
-        fake_path="/playpen/haochenz/save/causal_correct/synth_u/0/fake_text_samples.pt"
+        fake_path="/playpen/haochenz/save/non_causal_correct/synth_u/0/fake_text_samples.pt"
     )
 
     calculate_all_scores_two_paths(
         "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
-        fake_path="/playpen/haochenz/save/causal_correct/synth_m/0/fake_text_samples.pt"
+        fake_path="/playpen/haochenz/save/non_causal_correct/synth_m/0/fake_text_samples.pt"
     )
 
 
 
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
-        fake_path="/playpen/haochenz/save/causal_no_text/synth_u/0/samples.pt"
-    )
-
-    calculate_all_scores_two_paths(
-        "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
-        fake_path="/playpen/haochenz/save/causal_no_text/synth_m/0/samples.pt"
-    )
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/causal_correct/synth_u/0/samples.pt",
+    #     fake_path="/playpen/haochenz/save/causal_no_text/synth_u/0/samples.pt"
+    # )
+    #
+    # calculate_all_scores_two_paths(
+    #     "/playpen/haochenz/save/causal_correct/synth_m/0/samples.pt",
+    #     fake_path="/playpen/haochenz/save/causal_no_text/synth_m/0/samples.pt"
+    # )
 
 
 

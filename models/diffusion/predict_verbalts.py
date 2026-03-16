@@ -374,7 +374,7 @@ class PredictVerbalTS(nn.Module):
         B_raw, inputdim, n_var, L = x_raw.shape
         side_emb_raw = self.side_encoder(tp)
         diffusion_emb = self.diffusion_embedding(diffusion_step)
-        attr_emb_raw = attr_emb_raw.permute(0, 3, 2, 1)
+        # attr_emb_raw = attr_emb_raw.permute(0, 3, 2, 1)
 
         x_list = []
         side_list = []

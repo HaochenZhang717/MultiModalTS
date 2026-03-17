@@ -461,7 +461,7 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     samples_dict = torch.load(fake_path, map_location="cpu", weights_only=False)
     print(f"fake shape = {samples_dict['sampled_ts'].shape}")
     num_samples = min(len(real), len(samples_dict["sampled_ts"][0]))
-    real = real[:num_samples].permute(0,2,1)
+    real = real[:num_samples]
 
 
     print(f"real shape: {real.shape}")
@@ -483,11 +483,11 @@ def calculate_all_scores_two_paths(real_path, fake_path):
     real_emb = _moment_embed(moment_model, real, device)
 
     for i in range(10):
-        fake = samples_dict["sampled_ts"][i, :num_samples].permute(0,2,1)
+        fake = samples_dict["sampled_ts"][i, :num_samples]
 
         discriminative_score = discriminative_score_metrics(
-            real, fake,
-            real.shape[-1],
+            real.permute(0,2,1), fake.permute(0,2,1),
+            real.shape[1],
             device,
         )
         disc_score_list.append(discriminative_score)
